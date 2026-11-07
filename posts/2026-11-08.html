@@ -1,76 +1,57 @@
-<!--meta {"date":"2026-11-08","title":"SonicWall VPNのMFAすり抜け／OpenSSH「SSHole」悪用中／T:OpenAI「GPT-6 Cyber」登場","summary":"VPNのMFAがすり抜けられる穴がKEV入り、Alpine系のSSHは9時間で狙われた。週末の漏えいニュースに便乗するフィッシングにも要注意。","window":"11/6 08:00 〜 11/8 00:00 JST"} -->
-<section class="summary">
-<h2>今日の3行</h2>
-<ol>
-<li><b>SonicWallのSSL VPNで、SAMLのMFAをすり抜けられる穴がKEV入り。</b>回避策なしなので、アップデート一択。</li>
-<li><b>OpenSSH「SSHole」は公開から9時間で悪用開始。</b>狙われるのはAlpineなどmusl系のLinux。コンテナの中にいるやつが要注意。</li>
-<li>ドコモやTeamSpiritが漏えいを公表。<b>「お詫び」を装ったメールやSMSが来ても、リンクは踏まずに公式アプリから確認</b>しよう。</li>
-</ol>
-</section>
+<!--meta {"date":"2026-11-08","title":"SonicWall VPNのMFAすり抜け／OpenSSH「SSHole」が悪用中／T:OpenAI「GPT-6 Cyber」登場","summary":"VPNのMFAがすり抜けられる穴がKEV入り、Alpine系のSSHは9時間で狙われた。AIは脆弱性探しの専用モデルが登場。","window":"11/6 08:00 〜 11/8 00:00 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
 
-<h2 class="part"><span>#</span>セキュリティ</h2>
-
-<article class="topic" data-sev="high">
+<article class="topic" data-sev="high" data-tag="重大" data-short="SonicWall VPNのMFAが素通りに">
 <header><span class="sev">ヤバい</span><h3>SonicWall SSL VPNで、SAMLのMFAが素通りに（CVE-2026-19868）</h3></header>
-<p class="what">SonicWallのファイアウォールのSSL VPNで、SAMLでかけたMFAを飛ばしてログインできる穴が見つかりました。条件は「別の認証方式で使える正しいID・パスワードを持っていること」。CVSSは7.1で、米CISAが11/6にKEVに追加しています。つまり、もう実際の攻撃で使われているということです。</p>
-<p class="ex"><b>たとえると</b>正面玄関は顔認証つきなのに、裏口は合鍵だけで開いてしまう状態。ちゃんと顔認証を入れたつもりでも、裏口を知っている人には意味がありません。</p>
+<p class="what">SonicWallのファイアウォールのSSL VPNで、SAMLでかけたMFAを飛ばしてログインできる穴が見つかりました。条件は、別の認証方式で使える正しいID・パスワードを持っていること。</p>
+<p class="what">米CISAが11/6にKEVへ追加済み。つまり、もう実際の攻撃で使われています。</p>
+<p class="ex"><b>たとえると</b>正面玄関は顔認証なのに、裏口は合鍵だけで開く状態。顔認証を入れたつもりでも、裏口を知っている人には意味がありません。</p>
 <dl class="facts">
-<dt>対象</dt><dd>Gen7（SonicOS 7.3.3-7015以前）、Gen8（8.2.2-8015以前）。SAMLログインを使っている場合だけ影響あり</dd>
-<dt>直った版</dt><dd><b>7.3.4-7013 / 8.2.3-8015</b>（回避策はなし）</dd>
-<dt>EPSS</dt><dd>0.62%（パーセンタイル50%）</dd>
+<dt>対象</dt><dd>Gen7（SonicOS 7.3.3-7015以前）、Gen8（8.2.2-8015以前）。SAMLログインを使っている場合だけ</dd>
+<dt>直った版</dt><dd><b>7.3.4-7013 / 8.2.3-8015</b>（回避策なし）</dd>
+<dt>CVSS / EPSS</dt><dd>7.1 / 0.62%（パーセンタイル50%）</dd>
 </dl>
-<p class="act"><b>やること</b>SonicWallを使っているなら、まず管理画面でバージョンを確認。EPSSは低めですが、KEV入りは「もう撃たれている」という事実なので、こっちを優先しましょう。</p>
+<p class="act"><b>やること</b>SonicWallを使っているなら、管理画面でバージョンを確認して更新。EPSSは低めでも、KEV入り＝もう撃たれている事実を優先します。</p>
 </article>
 
-<article class="topic" data-sev="high">
+<article class="topic" data-sev="high" data-tag="危険" data-short="OpenSSH「SSHole」が9時間で悪用">
 <header><span class="sev">ヤバい</span><h3>OpenSSH「SSHole」、公開から9時間で悪用される（CVE-2026-123158）</h3></header>
-<p class="what">muslを使い、PAMを無効にしたLinux（Alpineの標準構成など）のsshdにある穴です。めちゃくちゃ長いパスワードを送りつけると、パスワードが無効になっているはずのアカウントに入れてしまいます。ハニーポットでは、公開から9時間足らずでroot権限まで取られました。Ubuntuなどglibc系のLinuxやDropbearは対象外です。</p>
-<p class="ex"><b>たとえると</b>「このドアは使用禁止」の貼り紙をしているのに、その貼り紙自体が合言葉として通ってしまうようなバグです。</p>
+<p class="what">muslを使い、PAMを無効にしたLinux（Alpineの標準構成など）のsshdにある穴です。めちゃくちゃ長いパスワードを送ると、パスワード無効のはずのアカウントに入れてしまいます。</p>
+<p class="what">ハニーポットでは、公開から9時間足らずでroot権限まで取られました。Ubuntuなどglibc系やDropbearは対象外です。</p>
+<p class="ex"><b>たとえると</b>「このドアは使用禁止」の貼り紙が、そのまま合言葉として通ってしまうバグです。</p>
 <dl class="facts">
-<dt>直った版</dt><dd><b>OpenSSH 10.6p2</b>（またはディストリの修正パッケージ）。入れたらsshdの再起動を忘れずに</dd>
+<dt>直った版</dt><dd><b>OpenSSH 10.6p2</b>（またはディストリの修正パッケージ）。入れたらsshdを再起動</dd>
 </dl>
-<p class="act"><b>やること</b>Alpineベースのコンテナや機器で、sshを外に開けていないかチェック。「とりあえず入れた検証用コンテナ」は台帳に載っていないことが多いので、そこが盲点になります。</p>
+<p class="act"><b>やること</b>Alpineベースのコンテナや機器で、sshを外に開けていないかチェック。台帳にない検証用コンテナが盲点です。</p>
 </article>
 
-<article class="topic" data-sev="mid">
-<header><span class="sev">注意</span><h3>Windowsの「ペイント」の穴は、Windows Updateでは直らない（CVE-2026-83844）</h3></header>
-<p class="what">ペイントのRCEが修正されましたが、修正版（11.2609.401.0）はMicrosoft Storeでしか配られていません。今のところ悪用の報告はありません。</p>
-<p class="ex"><b>たとえると</b>リコールの修理案内が、いつものディーラーではなく別の窓口から届くようなもの。いつもの窓口しか見ていないと気づけません。</p>
-<p class="act"><b>やること</b>個人のPCなら、Storeの「ライブラリ」から更新するだけ。会社でWSUSを使って更新を管理している場合は、この修正が届かないので、Intuneなどで別途確認しましょう。</p>
-</article>
-
-<article class="topic" data-sev="mid">
-<header><span class="sev">注意</span><h3>Siemensの産業機器にまとめてアップデート（JVNVU#98354779）</h3></header>
-<p class="what">JVNが、Siemensのアドバイザリ5件を公表しました。工場向けIoTゲートウェイの上で動くNode-REDに認証がない問題（SSA-834709）などが含まれます。</p>
-<p class="act"><b>やること</b>OTの現場を担当していないIT担当でも、「工場のネットワークと事務のネットワークは本当に分かれている？」を確認する良いきっかけになります。</p>
-</article>
-
-<article class="topic" data-sev="mid">
+<article class="topic" data-sev="mid" data-tag="日本" data-short="ドコモ・TeamSpiritで漏えい">
 <header><span class="sev">注意</span><h3>ドコモ・TeamSpirit・JNSAが漏えいを公表</h3></header>
-<p class="what">ドコモはオンラインショップとMy docomoへの不正アクセスで、最大約30万件の個人情報が流出しました。TeamSpiritは、開発サーバーに置いていた認証情報を悪用されて約2.9万件が漏えい。セキュリティの専門団体であるJNSAでも、最大1.5万件の漏えいの可能性が出ています。</p>
-<p class="ex"><b>たとえると</b>TeamSpiritの件は、合鍵を作業部屋の机に置きっぱなしにしていたら、そこから本社の金庫まで開けられてしまったような話。開発環境は本番より甘くなりがちです。</p>
-<p class="act"><b>やること</b>漏れた情報は「本物っぽいフィッシング」の材料になります。お詫びメールのリンクは踏まないこと。開発者の人は、自分の開発環境にクラウドのキーを平文で置いていないか確認しておきましょう。</p>
+<p class="what">ドコモはオンラインショップとMy docomoへの不正アクセスで、最大約30万件の個人情報が流出。TeamSpiritは開発サーバーの認証情報を悪用され、約2.9万件が漏えいしました。</p>
+<p class="what">セキュリティ専門団体のJNSAでも、最大1.5万件の漏えいの可能性が出ています。</p>
+<p class="ex"><b>たとえると</b>合鍵を作業部屋の机に置きっぱなしにしたら、本社の金庫まで開けられた話。開発環境は本番より甘くなりがちです。</p>
+<p class="act"><b>やること</b>「お詫び」メールのリンクは踏まない。開発者は、開発環境にクラウドのキーを平文で置いていないか確認を。</p>
 </article>
 
-<h2 class="part"><span>#</span>新技術・AI</h2>
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
 
-<article class="topic" data-sev="low">
-<header><span class="sev">注目</span><h3>ブラウザ拡張からPC上のAIエージェントを操れる、という研究</h3></header>
-<p class="what">悪意のあるブラウザ拡張から、Claude DesktopのDispatch機能を経由して、PCにnpmパッケージを入れさせられることが実証されました。実際の被害は報告されておらず、この機能は廃止予定とされています。</p>
-<p class="ex"><b>たとえると</b>AIエージェントは、あなたのPCの鍵を預かっている優秀な秘書。その秘書に、怪しい人がメモを渡せてしまう経路があった、という話です。</p>
-<p class="act"><b>やること</b>AIエージェントを使うなら、ブラウザ拡張はできるだけ減らすこと。エージェントはあなたと同じ権限で動く、という前提で考えましょう。</p>
-</article>
-
-<article class="topic" data-sev="low">
+<article class="topic" data-sev="low" data-tag="話題" data-short="OpenAI「GPT-6 Cyber」登場">
 <header><span class="sev">注目</span><h3>OpenAIが脆弱性探索の専用モデル「GPT-6 Cyber」を発表</h3></header>
 <p class="what">脆弱性を見つけて直すことに特化したモデルで、まずは一部の顧客だけに提供されます。OpenAIは、Firefoxの深刻な脆弱性を81件見つけたと説明しています（同社の主張）。</p>
-<p class="ex"><b>たとえると</b>疲れ知らずの金属探知機が、地雷原を24時間スキャンし続けるようになったイメージ。見つかるペースは今後も上がる一方です。</p>
-<p class="act"><b>やること</b>脆弱性の発見ペースが上がると、パッチもどんどん増えます。「出たら数日以内に当てる」更新の習慣が、これからますます効いてきます。</p>
+<p class="ex"><b>たとえると</b>疲れ知らずの金属探知機が、地雷原を24時間スキャンし続けるイメージ。見つかるペースは上がる一方です。</p>
+<p class="act"><b>やること</b>見つかる穴が増えれば、パッチも増えます。「出たら数日以内に当てる」習慣がますます効いてきます。</p>
+</article>
+
+<article class="topic" data-sev="low" data-tag="盲点" data-short="ブラウザ拡張からAIを操れる研究">
+<header><span class="sev">注目</span><h3>ブラウザ拡張からPC上のAIエージェントを操れる、という研究</h3></header>
+<p class="what">悪意のあるブラウザ拡張から、Claude DesktopのDispatch機能を経由して、PCにnpmパッケージを入れさせられることが実証されました。実被害の報告はなく、機能は廃止予定です。</p>
+<p class="ex"><b>たとえると</b>AIエージェントは、PCの鍵を預かる優秀な秘書。その秘書に、怪しい人がメモを渡せる経路があった話です。</p>
+<p class="act"><b>やること</b>AIエージェントを使うなら、ブラウザ拡張は最小限に。エージェントはあなたと同じ権限で動く前提で考えましょう。</p>
 </article>
 
 <section class="words">
 <h2>今日のキーワード</h2>
-<p><b>KEVとEPSS：</b>KEVは「もう撃たれた」という事実、EPSSは「これから撃たれそうか」の天気予報。迷ったら、KEVに載っているものから対応しましょう。</p>
+<p><b>KEVとEPSS：</b>KEVは「もう撃たれた」事実、EPSSは「これから撃たれそうか」の天気予報。迷ったらKEVから対応しましょう。</p>
 </section>
 
 <section class="src">
@@ -79,12 +60,10 @@
 <li><a href="https://www.securityweek.com/sonicwall-patches-exploited-sonicos-bug-that-weakens-vpn-logins/">SecurityWeek: SonicWall Patches Exploited SonicOS Vulnerability</a></li>
 <li><a href="https://securityaffairs.com/202581/security/u-s-cisa-adds-sonicwall-sonicos-sslvpn-flaw-to-its-known-exploited-vulnerabilities-catalog.html">Security Affairs: CISA adds SonicWall flaw to KEV</a></li>
 <li><a href="https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html">The Hacker News: OpenSSH SSHole</a></li>
-<li><a href="https://thehackernews.com/2026/11/microsoft-paint-rce-fix-now-available.html">The Hacker News: Paint RCE</a></li>
-<li><a href="https://jvn.jp/vu/JVNVU98354779/">JVNVU#98354779</a></li>
 <li><a href="https://www.docomo.ne.jp/info/notice/page/261105_03_m.html">NTTドコモ お知らせ</a></li>
 <li><a href="https://corp.teamspirit.com/news/information/2026/11/2026_1106_01/">TeamSpirit お知らせ</a></li>
 <li><a href="https://itmedia.co.jp/news/article/2611/06/2000002978">ITmedia NEWS: JNSA</a></li>
-<li><a href="https://thehackernews.com/2026/11/malicious-browser-extensions-could-use.html">The Hacker News: Claude Dispatch</a></li>
 <li><a href="https://thehackernews.com/2026/11/openai-launches-gpt-6-cyber-after-ai.html">The Hacker News: GPT-6 Cyber</a></li>
+<li><a href="https://thehackernews.com/2026/11/malicious-browser-extensions-could-use.html">The Hacker News: Claude Dispatch</a></li>
 </ul>
 </section>

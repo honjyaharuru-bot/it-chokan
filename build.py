@@ -61,6 +61,47 @@ def title_plain(title):
 def title_html(title, slug=""):
     return "".join('<span class="line ' + k + '">' + html.escape(t) + '</span>' for t, k in title_lines(title, slug))
 
+MAX_TOPICS = 6
+CAT_LABEL = {"cat-incident": "インシデント", "cat-tech": "新技術"}
+
+def enhance_body(body, slug=""):
+    """Assign ids to topics, fold facts into <details>, and build TOC + category tabs."""
+    items, cat, n = [], "cat-incident", 0
+    out, pos = [], 0
+    tok = re.compile(r'<h2 class="part" id="(cat-[a-z]+)"|<article class="topic"([^>]*)>|<dl class="facts">(.*?)</dl>', re.S)
+    for m in tok.finditer(body):
+        out.append(body[pos:m.start()])
+        if m.group(1):
+            cat = m.group(1)
+            out.append(m.group(0))
+        elif m.group(2) is not None:
+            n += 1
+            attrs = m.group(2)
+            tag = (re.search(r'data-tag="([^"]*)"', attrs) or [None, ""])[1]
+            short = (re.search(r'data-short="([^"]*)"', attrs) or [None, ""])[1]
+            if not short:
+                h3 = re.search(r"<h3>(.*?)</h3>", body[m.end():], re.S)
+                short = re.sub(r"<[^>]+>", "", h3.group(1)) if h3 else f"topic {n}"
+            items.append((n, cat, short, tag))
+            out.append(f'<article class="topic" id="t{n}"{attrs}>')
+        else:
+            out.append(f'<details class="more"><summary>詳細（対象・バージョン）</summary><dl class="facts">{m.group(3)}</dl></details>')
+        pos = m.end()
+    out.append(body[pos:])
+    if n > MAX_TOPICS:
+        print(f"WARN {slug}: {n} topics (max {MAX_TOPICS})")
+    toc = '<nav class="toc" aria-label="今日のトピック"><h2>今日のトピック</h2><ol>'
+    for i, c, short, tag in items:
+        chip = f'<span class="tag">{html.escape(tag)}</span>' if tag else ""
+        toc += f'<li class="{c}"><a href="#t{i}"><span class="tt">{short}</span>{chip}</a></li>'
+    toc += "</ol></nav>"
+    cats = [c for c in CAT_LABEL if f'id="{c}"' in body]
+    tabs = ""
+    if len(cats) > 1:
+        tabs = '<nav class="tabs" aria-label="カテゴリ">' + "".join(
+            f'<a href="#{c}" data-cat="{c}">{CAT_LABEL[c]}<span>{sum(1 for it in items if it[1] == c)}</span></a>' for c in cats) + "</nav>"
+    return toc, tabs, "".join(out)
+
 esc = html.escape
 FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap">'
 
@@ -121,9 +162,11 @@ def build():
         page = head(f"{title_plain(p['title'])}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
         page += f'<span class="date">{esc(p["date"])}</span>\n'
         page += f'<h1 class="title">{title_html(p["title"], p["slug"])}</h1>\n'
-        page += f'<div id="article">{p["body"]}</div>\n'
+        toc, tabs, body = enhance_body(p["body"], p["slug"])
+        page += toc + tabs
+        page += f'<div id="article">{body}</div>\n'
         page += '<section class="gl"><h2>この記事の用語</h2><ul id="gllist"></ul></section>\n'
-        page += FOOT.replace("</div></body>", f'</div>{SHEET}<script type="application/json" id="glossary-data">{gl_json}</script><script src="../static/glossary.js"></script></body>')
+        page += FOOT.replace("</div></body>", f'</div>{SHEET}<script type="application/json" id="glossary-data">{gl_json}</script><script src="../static/glossary.js"></script><script src="../static/nav.js"></script><a href="#" class="totop" id="totop" hidden aria-label="上へ戻る">▲</a></body>')
         (OUT / "posts" / f"{p['slug']}.html").write_text(page, encoding="utf-8")
     # index
     page = head(cfg["site_title"], cfg["site_description"], BASE, "", "website")
