@@ -24,7 +24,7 @@ def site_url():
 
 BASE = site_url()
 esc = html.escape
-FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">'
+FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap">'
 
 def head(title, desc, url, rel, og_type="article"):
     tw = f'<meta name="twitter:site" content="@{esc(cfg["x_handle"])}">' if cfg.get("x_handle") else ""
@@ -46,15 +46,15 @@ def head(title, desc, url, rel, og_type="article"):
 {FONTS}
 <link rel="stylesheet" href="{rel}static/style.css">
 </head><body><div class="wrap">
-<div class="mast"><a href="{rel}"><p class="logo">{esc(cfg['site_title'])}</p></a><span class="meta">セキュリティ × 新技術</span></div>
+<div class="mast"><a href="{rel}"><p class="logo"><span class="prompt">&gt;_</span>{esc(cfg['site_title'])}</p></a><span class="tag">// security × tech, every morning</span></div>
 """
 
-FOOT = """<footer>各記事は公開時点の情報です。対応の前に、出典の一次情報（ベンダーの公式発表など）を確認してください。</footer>
+FOOT = """<footer>記事は公開時点の情報です。対応する前に、出典の公式発表を確認してください。黄色いマーカーの用語はタップで解説が出ます。</footer>
 </div></body></html>"""
 
 SHEET = """<div class="sheet" id="sheet" hidden role="dialog" aria-live="polite"><div class="in">
 <div class="t"><b id="sT"></b><span id="sS"></span></div><p id="sL"></p>
-<div class="ctrl"><button class="btn" id="sK" type="button">知ってる（次から下線なし）</button><button class="btn" id="sX" type="button">閉じる</button></div>
+<div class="ctrl"><button class="btn" id="sX" type="button">閉じる</button></div>
 </div></div>"""
 
 def load_posts():
@@ -81,18 +81,18 @@ def build():
     for p in posts:
         url = f"{BASE}posts/{p['slug']}.html"
         page = head(f"{p['title']}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
-        page += f'<span class="meta">{esc(p["date"])} ／ 対象 {esc(p.get("window",""))}</span>\n'
-        page += f'<h1 class="title">{esc(p["title"])}</h1>\n'
-        page += '<p class="hint">点線の付いた用語をタップすると意味が表示されます。知っている用語は「知ってる」を押すと、次からは下線が付きません。</p>\n'
+        page += f'<span class="date">{esc(p["date"])}</span>\n'
+        title_html = '<span class="sep">/</span>'.join(esc(x) for x in p["title"].split("／"))
+        page += f'<h1 class="title">{title_html}</h1>\n'
         page += f'<div id="article">{p["body"]}</div>\n'
-        page += '<section class="gl"><h2>この記事に出てきた用語</h2><ul id="gllist"></ul><div class="ctrl"><button class="btn" id="reset" type="button">「知ってる」をリセット</button></div></section>\n'
+        page += '<section class="gl"><h2>この記事の用語</h2><ul id="gllist"></ul></section>\n'
         page += FOOT.replace("</div></body>", f'</div>{SHEET}<script type="application/json" id="glossary-data">{gl_json}</script><script src="../static/glossary.js"></script></body>')
         (OUT / "posts" / f"{p['slug']}.html").write_text(page, encoding="utf-8")
     # index
     page = head(cfg["site_title"], cfg["site_description"], BASE, "", "website")
-    page += f'<p class="hint">{esc(cfg["site_description"])}</p>\n<ul class="list">\n'
+    page += f'<p class="lead">{esc(cfg["site_description"])}</p>\n<ul class="list">\n'
     for p in posts:
-        page += f'<li><a href="posts/{p["slug"]}.html"><div class="card"><span class="meta">{esc(p["date"])}</span><h2>{esc(p["title"])}</h2><p>{esc(p["summary"])}</p></div></a></li>\n'
+        page += f'<li><a href="posts/{p["slug"]}.html"><div class="card"><span class="date">{esc(p["date"])}</span><h2>{esc(p["title"])}</h2><p>{esc(p["summary"])}</p></div></a></li>\n'
     page += "</ul>\n" + FOOT
     (OUT / "index.html").write_text(page, encoding="utf-8")
     # RSS

@@ -1,70 +1,76 @@
-<!--meta {"date":"2026-11-08","title":"SonicWall VPNのMFA回避とOpenSSH「SSHole」が悪用中／国内で漏えい公表相次ぐ","summary":"SonicWallのSSL VPNでSAML MFAを回避できる脆弱性がKEV入り。OpenSSHのSSHoleも悪用確認。ドコモ・TeamSpiritの漏えいに便乗したフィッシングに注意。","window":"2026-11-06 08:00 〜 2026-11-08 00:00 JST"} -->
+<!--meta {"date":"2026-11-08","title":"SonicWall VPNのMFAすり抜け／OpenSSH「SSHole」悪用中／ドコモ・TeamSpirit漏えい","summary":"VPNのMFAがすり抜けられる穴がKEV入り、Alpine系のSSHは9時間で狙われた。週末の漏えいニュースに便乗するフィッシングにも要注意。","window":"11/6 08:00 〜 11/8 00:00 JST"} -->
 <section class="summary">
-<h2>今日の3行まとめ</h2>
+<h2>今日の3行</h2>
 <ol>
-<li><b>SonicWallのSSL VPNで、SAMLのMFAを回避できる脆弱性がKEV入り。</b>回避策はなく、更新しか手がありません。</li>
-<li><b>OpenSSH「SSHole」が公開から9時間未満で悪用されました。</b>対象はAlpineなどmusl系Linuxで、コンテナや組込み機器によく使われています。</li>
-<li>ドコモやTeamSpiritが漏えいを公表しました。<b>両社を名乗るメールやSMSには、リンクを開かず公式アプリから確認</b>しましょう。</li>
+<li><b>SonicWallのSSL VPNで、SAMLのMFAをすり抜けられる穴がKEV入り。</b>回避策なしなので、アップデート一択。</li>
+<li><b>OpenSSH「SSHole」は公開から9時間で悪用開始。</b>狙われるのはAlpineなどmusl系のLinux。コンテナの中にいるやつが要注意。</li>
+<li>ドコモやTeamSpiritが漏えいを公表。<b>「お詫び」を装ったメールやSMSが来ても、リンクは踏まずに公式アプリから確認</b>しよう。</li>
 </ol>
 </section>
 
-<h2 class="part">セキュリティ</h2>
+<h2 class="part"><span>#</span>セキュリティ</h2>
 
 <article class="topic" data-sev="high">
-<header><span class="sev">高</span><h3>SonicWall SSL VPNで、SAMLのMFAを回避できる脆弱性（CVE-2026-19868）</h3></header>
-<p class="what">別の認証方式で使える正しいID・パスワードがあれば、SAMLで設定したMFAを通らずにVPNへログインできてしまいます。CVSSは7.1です。米CISAは11/6にKEVへ追加しました。</p>
+<header><span class="sev">ヤバい</span><h3>SonicWall SSL VPNで、SAMLのMFAが素通りに（CVE-2026-19868）</h3></header>
+<p class="what">SonicWallのファイアウォールのSSL VPNで、SAMLでかけたMFAを飛ばしてログインできる穴が見つかりました。条件は「別の認証方式で使える正しいID・パスワードを持っていること」。CVSSは7.1で、米CISAが11/6にKEVに追加しています。つまり、もう実際の攻撃で使われているということです。</p>
+<p class="ex"><b>たとえると</b>正面玄関は顔認証つきなのに、裏口は合鍵だけで開いてしまう状態。ちゃんと顔認証を入れたつもりでも、裏口を知っている人には意味がありません。</p>
 <dl class="facts">
-<dt>対象</dt><dd>Gen7 TZ/NSa/NSsp/NSv（SonicOS 7.3.3-7015以前）、Gen8 TZ/NSa/NSv（8.2.2-8015以前）。影響はSAMLログインを有効にしている場合のみ</dd>
-<dt>修正版</dt><dd><b>7.3.4-7013 / 8.2.3-8015</b>。回避策はありません</dd>
+<dt>対象</dt><dd>Gen7（SonicOS 7.3.3-7015以前）、Gen8（8.2.2-8015以前）。SAMLログインを使っている場合だけ影響あり</dd>
+<dt>直った版</dt><dd><b>7.3.4-7013 / 8.2.3-8015</b>（回避策はなし）</dd>
 <dt>EPSS</dt><dd>0.62%（パーセンタイル50%）</dd>
 </dl>
-<p class="act"><b>今日やること：</b>SonicWallを使っている会社や事務所は、管理画面でSonicOSのバージョンを確認し、修正版に更新してください。EPSSは低めですが、KEV入りはすでに攻撃に使われているという事実なので、こちらを優先します。</p>
+<p class="act"><b>やること</b>SonicWallを使っているなら、まず管理画面でバージョンを確認。EPSSは低めですが、KEV入りは「もう撃たれている」という事実なので、こっちを優先しましょう。</p>
 </article>
 
 <article class="topic" data-sev="high">
-<header><span class="sev">高</span><h3>OpenSSH「SSHole」（CVE-2026-123158）が悪用されている</h3></header>
-<p class="what">muslを使い、PAMを無効にしているLinux（Alpineの標準構成など）が対象です。極端に長いパスワードを送ると、パスワードを無効にしたアカウントへ認証なしでログインされます。ハニーポットでは、root権限を取られるところまで確認されました。glibc系のLinux、PAMを使う構成、Dropbearは対象外です。</p>
+<header><span class="sev">ヤバい</span><h3>OpenSSH「SSHole」、公開から9時間で悪用される（CVE-2026-123158）</h3></header>
+<p class="what">muslを使い、PAMを無効にしたLinux（Alpineの標準構成など）のsshdにある穴です。めちゃくちゃ長いパスワードを送りつけると、パスワードが無効になっているはずのアカウントに入れてしまいます。ハニーポットでは、公開から9時間足らずでroot権限まで取られました。Ubuntuなどglibc系のLinuxやDropbearは対象外です。</p>
+<p class="ex"><b>たとえると</b>「このドアは使用禁止」の貼り紙をしているのに、その貼り紙自体が合言葉として通ってしまうようなバグです。</p>
 <dl class="facts">
-<dt>修正版</dt><dd><b>OpenSSH 10.6p2</b>（またはディストリの修正パッケージ）。適用後にsshdの再起動が必要です</dd>
+<dt>直った版</dt><dd><b>OpenSSH 10.6p2</b>（またはディストリの修正パッケージ）。入れたらsshdの再起動を忘れずに</dd>
 </dl>
-<p class="act"><b>今日やること：</b>Alpineベースのコンテナや機器で、sshがインターネットに公開されていないか確認してください。こうした機器やコンテナはサーバーの一覧に載っていないことが多く、見落としがちです。</p>
+<p class="act"><b>やること</b>Alpineベースのコンテナや機器で、sshを外に開けていないかチェック。「とりあえず入れた検証用コンテナ」は台帳に載っていないことが多いので、そこが盲点になります。</p>
 </article>
 
 <article class="topic" data-sev="mid">
-<header><span class="sev">中</span><h3>工場向けSiemens製品のアドバイザリ（JVNVU#98354779）</h3></header>
-<p class="what">JVNが、Siemensの更新済みアドバイザリ5件を公表しました。SIMATIC IoT2050上のNode-REDで認証がかかっていない問題（SSA-834709）などが含まれます。</p>
-<p class="act"><b>今日やること：</b>工場でIoT2050やRUGGEDCOMを使っている場合は、SSAの原文で対象バージョンを確認してください。認証のないNode-REDは、社内ネットワークに入られた時点で設定を書き換えられてしまいます。まず、OTのネットワークが事務用のネットワークと分かれているかを確かめるのが手早い対策です。</p>
+<header><span class="sev">注意</span><h3>Windowsの「ペイント」の穴は、Windows Updateでは直らない（CVE-2026-83844）</h3></header>
+<p class="what">ペイントのRCEが修正されましたが、修正版（11.2609.401.0）はMicrosoft Storeでしか配られていません。今のところ悪用の報告はありません。</p>
+<p class="ex"><b>たとえると</b>リコールの修理案内が、いつものディーラーではなく別の窓口から届くようなもの。いつもの窓口しか見ていないと気づけません。</p>
+<p class="act"><b>やること</b>個人のPCなら、Storeの「ライブラリ」から更新するだけ。会社でWSUSを使って更新を管理している場合は、この修正が届かないので、Intuneなどで別途確認しましょう。</p>
 </article>
 
 <article class="topic" data-sev="mid">
-<header><span class="sev">中</span><h3>WindowsのペイントのRCE（CVE-2026-83844）は、Microsoft Storeでしか直らない</h3></header>
-<p class="what">修正版のペイント（11.2609.401.0）はMicrosoft Storeでしか配信されず、Windows Updateでは届きません。今のところ悪用は確認されていません。</p>
-<p class="act"><b>今日やること：</b>個人のPCなら、Microsoft Storeの「ライブラリ」から更新するだけです。会社で更新をWSUSで管理している場合、この修正は届かないので、Intuneなどで別途確認してください。</p>
+<header><span class="sev">注意</span><h3>Siemensの産業機器にまとめてアップデート（JVNVU#98354779）</h3></header>
+<p class="what">JVNが、Siemensのアドバイザリ5件を公表しました。工場向けIoTゲートウェイの上で動くNode-REDに認証がない問題（SSA-834709）などが含まれます。</p>
+<p class="act"><b>やること</b>OTの現場を担当していないIT担当でも、「工場のネットワークと事務のネットワークは本当に分かれている？」を確認する良いきっかけになります。</p>
 </article>
 
 <article class="topic" data-sev="mid">
-<header><span class="sev">中</span><h3>国内で漏えいの公表が相次ぐ（ドコモ／TeamSpirit／JNSA）</h3></header>
-<p class="what">ドコモは、オンラインショップとMy docomoへの不正アクセスで最大約30万件の個人情報が流出したと公表しました（原因は調査中）。TeamSpiritは、開発サーバーに置いていた認証情報を悪用されて約2.9万件が漏えいしたと公表しています。JNSAでも最大1.5万件が漏えいした可能性があります。</p>
-<p class="act"><b>今日やること：</b>漏えいした情報は、本物らしく見えるフィッシングに使われます。各社を名乗るメールやSMSのリンクは開かず、公式アプリやブックマークから確認してください。</p>
+<header><span class="sev">注意</span><h3>ドコモ・TeamSpirit・JNSAが漏えいを公表</h3></header>
+<p class="what">ドコモはオンラインショップとMy docomoへの不正アクセスで、最大約30万件の個人情報が流出しました。TeamSpiritは、開発サーバーに置いていた認証情報を悪用されて約2.9万件が漏えい。セキュリティの専門団体であるJNSAでも、最大1.5万件の漏えいの可能性が出ています。</p>
+<p class="ex"><b>たとえると</b>TeamSpiritの件は、合鍵を作業部屋の机に置きっぱなしにしていたら、そこから本社の金庫まで開けられてしまったような話。開発環境は本番より甘くなりがちです。</p>
+<p class="act"><b>やること</b>漏れた情報は「本物っぽいフィッシング」の材料になります。お詫びメールのリンクは踏まないこと。開発者の人は、自分の開発環境にクラウドのキーを平文で置いていないか確認しておきましょう。</p>
 </article>
 
-<h2 class="part">新技術・活用</h2>
+<h2 class="part"><span>#</span>新技術・AI</h2>
 
 <article class="topic" data-sev="low">
-<header><span class="sev">注目</span><h3>AIエージェントの新しいリスク：ブラウザ拡張から、PC上のAIに命令を送れる問題</h3></header>
-<p class="what">研究者が、悪意あるブラウザ拡張からClaude DesktopのDispatch機能を経由して、PCにnpmパッケージをインストールさせられることを実証しました。実際の被害は報告されておらず、この機能は廃止予定とされています。</p>
-<p class="act"><b>今日やること：</b>AIエージェントはあなたと同じ権限でPCを操作します。そのため、ブラウザ拡張は本当に必要なものだけに絞ってください。</p>
+<header><span class="sev">注目</span><h3>ブラウザ拡張からPC上のAIエージェントを操れる、という研究</h3></header>
+<p class="what">悪意のあるブラウザ拡張から、Claude DesktopのDispatch機能を経由して、PCにnpmパッケージを入れさせられることが実証されました。実際の被害は報告されておらず、この機能は廃止予定とされています。</p>
+<p class="ex"><b>たとえると</b>AIエージェントは、あなたのPCの鍵を預かっている優秀な秘書。その秘書に、怪しい人がメモを渡せてしまう経路があった、という話です。</p>
+<p class="act"><b>やること</b>AIエージェントを使うなら、ブラウザ拡張はできるだけ減らすこと。エージェントはあなたと同じ権限で動く、という前提で考えましょう。</p>
 </article>
 
 <article class="topic" data-sev="low">
-<header><span class="sev">注目</span><h3>OpenAIが脆弱性探索に特化した「GPT-6 Cyber」を発表</h3></header>
-<p class="what">脆弱性の発見と修正に特化したモデルで、まずは一部の顧客に限定して提供されます。報道によると、Firefoxの未知の深刻な脆弱性を81件見つけたとOpenAIは説明しています（同社の主張）。</p>
-<p class="act"><b>今日やること：</b>AIによって脆弱性が見つかるペースは上がり続けています。「パッチが出たら数日以内に当てる」という更新の習慣が、これまで以上に効いてきます。</p>
+<header><span class="sev">注目</span><h3>OpenAIが脆弱性探索の専用モデル「GPT-6 Cyber」を発表</h3></header>
+<p class="what">脆弱性を見つけて直すことに特化したモデルで、まずは一部の顧客だけに提供されます。OpenAIは、Firefoxの深刻な脆弱性を81件見つけたと説明しています（同社の主張）。</p>
+<p class="ex"><b>たとえると</b>疲れ知らずの金属探知機が、地雷原を24時間スキャンし続けるようになったイメージ。見つかるペースは今後も上がる一方です。</p>
+<p class="act"><b>やること</b>脆弱性の発見ペースが上がると、パッチもどんどん増えます。「出たら数日以内に当てる」更新の習慣が、これからますます効いてきます。</p>
 </article>
 
 <section class="words">
-<h2>重要ワード</h2>
-<p><b>KEVとEPSS：</b>KEVは「すでに攻撃に使われた」という事実、EPSSは「この先悪用されそうか」の予測です。迷ったら、KEVに載っているものから先に対応します。</p>
+<h2>今日のキーワード</h2>
+<p><b>KEVとEPSS：</b>KEVは「もう撃たれた」という事実、EPSSは「これから撃たれそうか」の天気予報。迷ったら、KEVに載っているものから対応しましょう。</p>
 </section>
 
 <section class="src">
@@ -73,8 +79,8 @@
 <li><a href="https://www.securityweek.com/sonicwall-patches-exploited-sonicos-bug-that-weakens-vpn-logins/">SecurityWeek: SonicWall Patches Exploited SonicOS Vulnerability</a></li>
 <li><a href="https://securityaffairs.com/202581/security/u-s-cisa-adds-sonicwall-sonicos-sslvpn-flaw-to-its-known-exploited-vulnerabilities-catalog.html">Security Affairs: CISA adds SonicWall flaw to KEV</a></li>
 <li><a href="https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html">The Hacker News: OpenSSH SSHole</a></li>
-<li><a href="https://jvn.jp/vu/JVNVU98354779/">JVNVU#98354779</a></li>
 <li><a href="https://thehackernews.com/2026/11/microsoft-paint-rce-fix-now-available.html">The Hacker News: Paint RCE</a></li>
+<li><a href="https://jvn.jp/vu/JVNVU98354779/">JVNVU#98354779</a></li>
 <li><a href="https://www.docomo.ne.jp/info/notice/page/261105_03_m.html">NTTドコモ お知らせ</a></li>
 <li><a href="https://corp.teamspirit.com/news/information/2026/11/2026_1106_01/">TeamSpirit お知らせ</a></li>
 <li><a href="https://itmedia.co.jp/news/article/2611/06/2000002978">ITmedia NEWS: JNSA</a></li>
