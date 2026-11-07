@@ -7,8 +7,8 @@ import json, os, re, shutil, html, pathlib, unicodedata
 
 ROOT = pathlib.Path(__file__).parent
 OUT = ROOT / "_site"
-cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
-glossary = json.loads((ROOT / "glossary.json").read_text(encoding="utf-8"))
+cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8-sig"))
+glossary = json.loads((ROOT / "glossary.json").read_text(encoding="utf-8-sig"))
 
 def site_url():
     u = os.environ.get("SITE_URL")
@@ -26,6 +26,7 @@ BASE = site_url()
 
 # Title rules: one topic per line, max 3 lines, each line <= 30 width units
 # (full-width char = 2, half-width = 1  -> about 15 Japanese chars)
+# A line starting with "T:" is a tech topic (blue marker + TECH badge).
 TITLE_MAX_LINES = 3
 TITLE_MAX_WIDTH = 30
 
@@ -33,12 +34,15 @@ def _w(ch):
     return 2 if unicodedata.east_asian_width(ch) in "WFA" else 1
 
 def title_lines(title, slug=""):
-    lines = [x.strip() for x in title.split("／") if x.strip()]
-    if len(lines) > TITLE_MAX_LINES:
-        print(f"WARN {slug}: title has {len(lines)} lines, keeping {TITLE_MAX_LINES}")
-        lines = lines[:TITLE_MAX_LINES]
+    raw = [x.strip() for x in title.split("／") if x.strip()]
+    if len(raw) > TITLE_MAX_LINES:
+        print(f"WARN {slug}: title has {len(raw)} lines, keeping {TITLE_MAX_LINES}")
+        raw = raw[:TITLE_MAX_LINES]
     out = []
-    for ln in lines:
+    for ln in raw:
+        kind = "sec"
+        if ln[:2] in ("T:", "T："):
+            kind, ln = "tech", ln[2:].strip()
         if sum(_w(c) for c in ln) > TITLE_MAX_WIDTH:
             print(f"WARN {slug}: title line too long, truncated: {ln}")
             acc, cut = 0, ""
@@ -48,11 +52,14 @@ def title_lines(title, slug=""):
                 acc += _w(c)
                 cut += c
             ln = cut + "…"
-        out.append(ln)
+        out.append((ln, kind))
     return out
 
+def title_plain(title):
+    return " / ".join(t for t, _ in title_lines(title))
+
 def title_html(title, slug=""):
-    return "".join('<span class="line">' + html.escape(x) + '</span>' for x in title_lines(title, slug))
+    return "".join('<span class="line ' + k + '">' + html.escape(t) + '</span>' for t, k in title_lines(title, slug))
 
 esc = html.escape
 FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap">'
@@ -84,14 +91,14 @@ FOOT = """<footer>記事は公開時点の情報です。対応する前に、�
 </div></body></html>"""
 
 SHEET = """<div class="sheet" id="sheet" hidden role="dialog" aria-live="polite"><div class="in">
-<div class="t"><b id="sT"></b><span id="sS"></span></div><p id="sL"></p>
+<div class="t"><b id="sT"></b><i id="sF" hidden></i></div><p class="s" id="sS"></p><p id="sL"></p>
 <div class="ctrl"><button class="btn" id="sX" type="button">閉じる</button></div>
 </div></div>"""
 
 def load_posts():
     posts = []
     for p in sorted((ROOT / "posts").glob("*.html"), reverse=True):
-        txt = p.read_text(encoding="utf-8")
+        txt = p.read_text(encoding="utf-8-sig")
         m = re.match(r"\s*<!--meta\s+(\{.*?\})\s*-->", txt, re.S)
         if not m:
             raise SystemExit(f"meta missing: {p}")
@@ -111,8 +118,7 @@ def build():
     posts = load_posts()
     for p in posts:
         url = f"{BASE}posts/{p['slug']}.html"
-        plain_title = " / ".join(title_lines(p["title"]))
-        page = head(f"{plain_title}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
+        page = head(f"{title_plain(p['title'])}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
         page += f'<span class="date">{esc(p["date"])}</span>\n'
         page += f'<h1 class="title">{title_html(p["title"], p["slug"])}</h1>\n'
         page += f'<div id="article">{p["body"]}</div>\n'
@@ -128,7 +134,7 @@ def build():
     (OUT / "index.html").write_text(page, encoding="utf-8")
     # RSS
     items = "".join(
-        f"<item><title>{esc(' / '.join(title_lines(p['title'])))}</title><link>{BASE}posts/{p['slug']}.html</link><guid>{BASE}posts/{p['slug']}.html</guid><pubDate>{p['date']}</pubDate><description>{esc(p['summary'])}</description></item>"
+        f"<item><title>{esc(title_plain(p['title']))}</title><link>{BASE}posts/{p['slug']}.html</link><guid>{BASE}posts/{p['slug']}.html</guid><pubDate>{p['date']}</pubDate><description>{esc(p['summary'])}</description></item>"
         for p in posts[:30])
     (OUT / "feed.xml").write_text(
         f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>{esc(cfg["site_title"])}</title><link>{BASE}</link><description>{esc(cfg["site_description"])}</description>{items}</channel></rss>',

@@ -1,6 +1,8 @@
 (()=>{
 const el=document.getElementById('glossary-data');if(!el)return;
 const G=JSON.parse(el.textContent);
+let FULL={};
+fetch('../static/glossary_full.json').then(r=>r.ok?r.json():{}).then(j=>{FULL=j||{}}).catch(()=>{});
 const byKey=new Map();
 G.terms.forEach(t=>[t.term,...(t.aliases||[])].forEach(k=>byKey.set(k,t)));
 const keys=[...byKey.keys()].sort((a,b)=>b.length-a.length);
@@ -28,19 +30,29 @@ root.querySelectorAll('.topic,.summary,.words').forEach(sec=>{
 });
 const ul=document.getElementById('gllist');
 if(ul)G.terms.filter(t=>used.has(t.term)).forEach(t=>{
-  const li=document.createElement('li');const b=document.createElement('b');b.textContent=t.term;li.append(b,t.short);ul.append(li);
+  const li=document.createElement('li');
+  const b=document.createElement('button');b.type='button';b.className='glbtn';b.dataset.t=t.term;
+  const k=document.createElement('b');k.textContent=t.term;
+  const s=document.createElement('span');s.textContent=t.short;
+  b.append(k,s);li.append(b);ul.append(li);
 });
 const sheet=document.getElementById('sheet');let curBtn=null;
 function open(btn){
-  const t=G.terms.find(x=>x.term===btn.dataset.t);
+  const t=G.terms.find(x=>x.term===btn.dataset.t);if(!t)return;
   if(curBtn)curBtn.classList.remove('on');curBtn=btn;btn.classList.add('on');
   document.getElementById('sT').textContent=t.term;
+  const f=document.getElementById('sF');const full=FULL[t.term]||'';
+  f.textContent=full;f.hidden=!full;
   document.getElementById('sS').textContent=t.short;
   document.getElementById('sL').textContent=t.long;
   sheet.hidden=false;
 }
 function close(){sheet.hidden=true;if(curBtn)curBtn.classList.remove('on');curBtn=null}
-root.addEventListener('click',e=>{const b=e.target.closest('button.term');if(b)open(b)});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]');
+  if(b){open(b);return}
+  if(!sheet.hidden&&!e.target.closest('.sheet .in'))close();
+});
 document.getElementById('sX').onclick=close;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 })();

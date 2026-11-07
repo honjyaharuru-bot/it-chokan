@@ -77,3 +77,15 @@ footer{font-size:.78rem;color:var(--muted);border-top:2px dashed var(--dot);padd
 h1.title{font-size:clamp(1.15rem,5.2vw,1.55rem);line-height:1.6}
 .list .card h2.title{font-size:1rem;line-height:1.7}
 
+
+/* v4: category markers in title, full name in sheet, tappable glossary list */
+.title .line.tech::before{content:"\25B8";color:var(--blue)}
+.title .line.tech::after{content:"TECH";font-family:var(--mono);font-size:.55em;font-weight:700;vertical-align:.35em;margin-left:.5em;padding:0 .45em;border:1.5px solid var(--ink);border-radius:4px;background:var(--lime);color:#14213d}
+.sheet .t i{font-style:normal;font-family:var(--mono);font-size:.78rem;color:var(--muted);flex-basis:100%}
+.sheet .t i[hidden]{display:none}
+.sheet p.s{font-weight:700;color:var(--muted);font-size:.9rem}
+.glbtn{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;padding:6px 4px;font:inherit;color:inherit;cursor:pointer;border-bottom:1px dashed var(--dot);min-height:44px}
+.glbtn b{font-family:var(--mono);color:var(--blue);flex:none}
+.glbtn span{font-size:.88rem}
+.glbtn.on{background:var(--mark)}
+
