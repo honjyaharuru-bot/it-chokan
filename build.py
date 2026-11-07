@@ -3,7 +3,7 @@
 Inputs: config.json, glossary.json, posts/YYYY-MM-DD.html (first line: <!--meta {json} -->), static/
 SITE_URL: env SITE_URL, else derived from GITHUB_REPOSITORY (owner/repo) -> https://owner.github.io/repo/
 """
-import json, os, re, shutil, html, pathlib
+import json, os, re, shutil, html, pathlib, unicodedata
 
 ROOT = pathlib.Path(__file__).parent
 OUT = ROOT / "_site"
@@ -23,6 +23,37 @@ def site_url():
     return "http://localhost:8000/"
 
 BASE = site_url()
+
+# Title rules: one topic per line, max 3 lines, each line <= 30 width units
+# (full-width char = 2, half-width = 1  -> about 15 Japanese chars)
+TITLE_MAX_LINES = 3
+TITLE_MAX_WIDTH = 30
+
+def _w(ch):
+    return 2 if unicodedata.east_asian_width(ch) in "WFA" else 1
+
+def title_lines(title, slug=""):
+    lines = [x.strip() for x in title.split("／") if x.strip()]
+    if len(lines) > TITLE_MAX_LINES:
+        print(f"WARN {slug}: title has {len(lines)} lines, keeping {TITLE_MAX_LINES}")
+        lines = lines[:TITLE_MAX_LINES]
+    out = []
+    for ln in lines:
+        if sum(_w(c) for c in ln) > TITLE_MAX_WIDTH:
+            print(f"WARN {slug}: title line too long, truncated: {ln}")
+            acc, cut = 0, ""
+            for c in ln:
+                if acc + _w(c) > TITLE_MAX_WIDTH - 2:
+                    break
+                acc += _w(c)
+                cut += c
+            ln = cut + "…"
+        out.append(ln)
+    return out
+
+def title_html(title, slug=""):
+    return "".join('<span class="line">' + html.escape(x) + '</span>' for x in title_lines(title, slug))
+
 esc = html.escape
 FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap">'
 
@@ -80,10 +111,10 @@ def build():
     posts = load_posts()
     for p in posts:
         url = f"{BASE}posts/{p['slug']}.html"
-        page = head(f"{p['title']}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
+        plain_title = " / ".join(title_lines(p["title"]))
+        page = head(f"{plain_title}｜{cfg['site_title']} {p['date']}", p["summary"], url, "../")
         page += f'<span class="date">{esc(p["date"])}</span>\n'
-        title_html = '<span class="sep">/</span>'.join(esc(x) for x in p["title"].split("／"))
-        page += f'<h1 class="title">{title_html}</h1>\n'
+        page += f'<h1 class="title">{title_html(p["title"], p["slug"])}</h1>\n'
         page += f'<div id="article">{p["body"]}</div>\n'
         page += '<section class="gl"><h2>この記事の用語</h2><ul id="gllist"></ul></section>\n'
         page += FOOT.replace("</div></body>", f'</div>{SHEET}<script type="application/json" id="glossary-data">{gl_json}</script><script src="../static/glossary.js"></script></body>')
@@ -92,12 +123,12 @@ def build():
     page = head(cfg["site_title"], cfg["site_description"], BASE, "", "website")
     page += f'<p class="lead">{esc(cfg["site_description"])}</p>\n<ul class="list">\n'
     for p in posts:
-        page += f'<li><a href="posts/{p["slug"]}.html"><div class="card"><span class="date">{esc(p["date"])}</span><h2>{esc(p["title"])}</h2><p>{esc(p["summary"])}</p></div></a></li>\n'
+        page += f'<li><a href="posts/{p["slug"]}.html"><div class="card"><span class="date">{esc(p["date"])}</span><h2 class="title">{title_html(p["title"], p["slug"])}</h2><p>{esc(p["summary"])}</p></div></a></li>\n'
     page += "</ul>\n" + FOOT
     (OUT / "index.html").write_text(page, encoding="utf-8")
     # RSS
     items = "".join(
-        f"<item><title>{esc(p['title'])}</title><link>{BASE}posts/{p['slug']}.html</link><guid>{BASE}posts/{p['slug']}.html</guid><pubDate>{p['date']}</pubDate><description>{esc(p['summary'])}</description></item>"
+        f"<item><title>{esc(' / '.join(title_lines(p['title'])))}</title><link>{BASE}posts/{p['slug']}.html</link><guid>{BASE}posts/{p['slug']}.html</guid><pubDate>{p['date']}</pubDate><description>{esc(p['summary'])}</description></item>"
         for p in posts[:30])
     (OUT / "feed.xml").write_text(
         f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>{esc(cfg["site_title"])}</title><link>{BASE}</link><description>{esc(cfg["site_description"])}</description>{items}</channel></rss>',

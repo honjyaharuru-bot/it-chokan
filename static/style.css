@@ -70,3 +70,10 @@ button.btn{font:inherit;font-weight:700;font-size:.85rem;border:2px solid var(--
 .lead{margin:0;font-weight:700}
 footer{font-size:.78rem;color:var(--muted);border-top:2px dashed var(--dot);padding-top:10px}
 @media (prefers-reduced-motion:no-preference){.sheet .in{animation:pop .18s cubic-bezier(.2,1.4,.4,1)}@keyframes pop{from{transform:translateY(14px) scale(.98)}}.list a:hover .card{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}.card{transition:transform .12s,box-shadow .12s}}
+
+/* one topic per line */
+.title .line{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:1.1em;position:relative}
+.title .line::before{content:"\25B8";position:absolute;left:0;color:var(--pink)}
+h1.title{font-size:clamp(1.15rem,5.2vw,1.55rem);line-height:1.6}
+.list .card h2.title{font-size:1rem;line-height:1.7}
+
