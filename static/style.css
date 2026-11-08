@@ -135,3 +135,6 @@ details.more .facts{margin:0;padding:8px 12px}
 .leaks li b{display:inline-block;margin-right:6px}
 .leaks li .n{display:inline-block;font-family:var(--mono);font-size:.78rem;font-weight:700;color:#14213d;background:var(--yellow);border-radius:6px;padding:0 6px;margin-right:6px}
 
+/* v7: proper nouns (company / product / service names) - subtle emphasis for skimming */
+.topic .pn{font-weight:700}
+
