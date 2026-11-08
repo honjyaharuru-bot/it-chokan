@@ -128,3 +128,10 @@ details.more .facts{margin:0;padding:8px 12px}
 .glbtn span{font-size:.88rem}
 .glbtn.on{background:var(--mark)}
 
+/* v6: leak roundup list */
+.leaks{list-style:none;margin:10px 0;padding:0;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.leaks li{padding:8px 12px;border-bottom:1px dashed var(--dot);font-size:.9rem;line-height:1.55}
+.leaks li:last-child{border-bottom:0}
+.leaks li b{display:inline-block;margin-right:6px}
+.leaks li .n{display:inline-block;font-family:var(--mono);font-size:.78rem;font-weight:700;color:#14213d;background:var(--yellow);border-radius:6px;padding:0 6px;margin-right:6px}
+
