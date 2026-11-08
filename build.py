@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Build the static site into _site/.  (v6: SEO + analytics)
+"""Build the static site into _site/.  (v7: + sanitizer, CSP)
 Inputs: config.json, glossary.json, posts/YYYY-MM-DD.html (first line: <!--meta {json} -->), static/
 Optional: site_ids.json {"google_site_verification": "", "goatcounter": "", "show_counter": false}
 SITE_URL: env SITE_URL, else derived from GITHUB_REPOSITORY (owner/repo) -> https://owner.github.io/repo/
 v6 adds: sitemap.xml, robots.txt, NewsArticle JSON-LD, about page, Search Console meta, GoatCounter tag.
+v7 adds: allowlist HTML sanitizer for posts (blocks injected scripts/links), Content-Security-Policy meta,
+         counter script moved to static file, about page: analytics + corrections contact.
 """
 import json, os, re, shutil, html, pathlib, unicodedata
+from html.parser import HTMLParser
 
 ROOT = pathlib.Path(__file__).parent
 OUT = ROOT / "_site"
@@ -69,6 +72,87 @@ def title_plain(title):
 def title_html(title, slug=""):
     return "".join('<span class="line ' + k + '">' + html.escape(t) + '</span>' for t, k in title_lines(title, slug))
 
+
+# ---- v7: allowlist sanitizer for AI-written post HTML ----
+ALLOWED = {
+    "h2": {"class", "id"}, "h3": set(), "span": {"class"}, "b": set(), "strong": set(), "em": set(), "br": set(),
+    "article": {"class", "data-sev", "data-tag", "data-short"}, "header": set(), "section": {"class"},
+    "p": {"class"}, "ul": {"class"}, "ol": set(), "li": set(), "dl": {"class"}, "dt": set(), "dd": set(),
+    "a": {"href"}, "script": {"type", "id"},
+}
+VOID = {"br"}
+DROP_WITH_CONTENT = {"script", "style", "iframe", "object", "embed", "svg", "math", "template", "noscript", "form", "textarea", "select"}
+SAFE_VAL = re.compile(r"^[^<>\"`]*$")
+
+class Sanitizer(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.out, self.removed, self.skip, self.in_json = [], [], 0, False
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "script":
+            if a.get("type") == "application/json" and a.get("id") == "post-terms" and not self.skip:
+                self.in_json, self.json_buf = True, []
+            else:
+                self.removed.append("script"); self.skip += 1
+            return
+        if self.skip:
+            if tag in DROP_WITH_CONTENT: self.skip += 1
+            return
+        if tag in DROP_WITH_CONTENT:
+            self.removed.append(tag); self.skip += 1; return
+        if tag not in ALLOWED:
+            self.removed.append(tag); return
+        parts = [tag]
+        for k, v in attrs:
+            if k not in ALLOWED[tag] or v is None or not SAFE_VAL.match(v):
+                self.removed.append(f"{tag}@{k}"); continue
+            if tag == "a" and k == "href" and not re.match(r"^https?://", v, re.I):
+                self.removed.append("a@href(non-http)"); continue
+            parts.append(f'{k}="{html.escape(html.unescape(v), quote=True)}"')
+        if tag == "a":
+            parts.append('rel="noopener noreferrer"')
+        self.out.append("<" + " ".join(parts) + ">")
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag in ALLOWED and tag not in VOID and not self.skip:
+            self.out.append(f"</{tag}>")
+    def handle_endtag(self, tag):
+        if tag == "script" and self.in_json:
+            raw = "".join(self.json_buf); self.in_json = False
+            try:
+                terms = json.loads(raw)
+                clean = [{k: str(t.get(k, "")) for k in ("term", "full", "short", "long")} | {"aliases": [str(x) for x in t.get("aliases", [])]}
+                         for t in terms if isinstance(t, dict) and t.get("term")]
+                self.out.append('<script type="application/json" id="post-terms">' + json.dumps(clean, ensure_ascii=False).replace("<", "\\u003c") + "</script>")
+            except Exception:
+                self.removed.append("post-terms(invalid json)")
+            return
+        if self.skip:
+            if tag in DROP_WITH_CONTENT: self.skip -= 1
+            return
+        if tag in ALLOWED and tag not in VOID:
+            self.out.append(f"</{tag}>")
+    def handle_data(self, d):
+        if self.in_json: self.json_buf.append(d); return
+        if not self.skip: self.out.append(html.escape(html.unescape(d), quote=False))
+    def handle_entityref(self, name):
+        if not self.skip and not self.in_json: self.out.append(f"&{name};")
+    def handle_charref(self, name):
+        if not self.skip and not self.in_json: self.out.append(f"&#{name};")
+    def handle_comment(self, d):
+        pass
+
+def sanitize(body, slug=""):
+    s = Sanitizer(); s.feed(body); s.close()
+    if s.removed:
+        print(f"WARN {slug}: sanitizer removed: {sorted(set(s.removed))}")
+    return "".join(s.out)
+
+CSP = ("default-src 'self'; script-src 'self' https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+       "font-src https://fonts.gstatic.com; img-src 'self' data: https://*.goatcounter.com; "
+       "connect-src 'self' https://*.goatcounter.com; object-src 'none'; base-uri 'self'; form-action 'none'")
+
 MAX_TOPICS = 6
 CAT_LABEL = {"cat-incident": "インシデント", "cat-tech": "新技術"}
 
@@ -122,7 +206,7 @@ def head(title, desc, url, rel, og_type="article", extra=""):
     gc = f'<script data-goatcounter="https://{esc(GC)}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>' if GC else ""
     return f"""<!doctype html>
 <html lang="ja"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="{CSP}"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{url}">
@@ -153,8 +237,12 @@ SHEET = """<div class="sheet" id="sheet" hidden role="dialog" aria-live="polite"
 def counter_html(path):
     if not SHOW_COUNTER:
         return ""
-    return (f'<p class="views" id="views" hidden></p><script>fetch("https://{GC}.goatcounter.com/counter/"+encodeURIComponent("{path}")+".json")'
-            '.then(r=>r.ok?r.json():null).then(j=>{if(j&&j.count){const e=document.getElementById("views");e.textContent="この記事は "+j.count+" 回読まれました";e.hidden=false}}).catch(()=>{})</script>\n')
+    return '<p class="views" id="views" hidden></p><script src="../static/counter.js" defer></script>\n'
+
+COUNTER_JS = """(()=>{const e=document.getElementById('views');if(!e)return;
+fetch('https://%s.goatcounter.com/counter/'+encodeURIComponent(location.pathname)+'.json')
+.then(r=>r.ok?r.json():null).then(j=>{if(j&&j.count){e.textContent='\\u3053\\u306e\\u8a18\\u4e8b\\u306f '+j.count+' \\u56de\\u8aad\\u307e\\u308c\\u307e\\u3057\\u305f';e.hidden=false}}).catch(()=>{})})();
+"""
 
 def load_posts():
     posts = []
@@ -165,7 +253,7 @@ def load_posts():
             raise SystemExit(f"meta missing: {p}")
         meta = json.loads(m.group(1))
         meta["slug"] = p.stem
-        meta["body"] = txt[m.end():]
+        meta["body"] = sanitize(txt[m.end():], p.stem)
         meta["mtime"] = p.stat().st_mtime
         posts.append(meta)
     return posts
@@ -181,6 +269,10 @@ ABOUT_BODY = """<h1 class="title"><span class="line sec">このサイトにつ�
 <p>ベンダーの公式発表、米CISAのKEV、JPCERT/CC・JVN・IPA、被害組織の公表など、一次情報で確認できたことだけを書きます。犯行グループの主張だけの情報は載せません。各記事の末尾に出典のリンクを付けています。</p>
 <h2>作り方</h2>
 <p>記事の候補探し・要約・用語解説にはAIを使い、上の基準と一次情報の確認ルールに沿って作成しています。誤りに気づいた場合は、次の更新で訂正します。</p>
+<h2>訂正・ご連絡</h2>
+<p>記事の誤りや、掲載内容についてのご連絡は、<a href="https://github.com/it-chokan/it-chokan.github.io/issues">GitHub の Issues</a> からお願いします。確認のうえ、必要に応じて訂正します。</p>
+<h2>アクセス解析</h2>
+<p>閲覧数の把握のため、Cookieを使わないアクセス解析サービス GoatCounter を利用しています。個人を特定する情報は収集していません。</p>
 </section>
 </div>
 """
@@ -191,6 +283,8 @@ def build():
     (OUT / "posts").mkdir(parents=True)
     shutil.copytree(ROOT / "static", OUT / "static")
     shutil.copy(ROOT / "glossary.json", OUT / "glossary.json")
+    if SHOW_COUNTER:
+        (OUT / "static" / "counter.js").write_text(COUNTER_JS % GC, encoding="utf-8")
     gl_json = json.dumps(glossary, ensure_ascii=False).replace("</", "<\\/")
     posts = load_posts()
     for p in posts:
