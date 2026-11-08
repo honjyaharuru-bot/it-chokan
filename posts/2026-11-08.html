@@ -1,69 +1,65 @@
-<!--meta {"date":"2026-11-08","title":"SonicWall VPNのMFAすり抜け／OpenSSH「SSHole」が悪用中／T:OpenAI「GPT-6 Cyber」登場","summary":"VPNのMFAがすり抜けられる穴がKEV入り、Alpine系のSSHは9時間で狙われた。AIは脆弱性探しの専用モデルが登場。","window":"11/6 08:00 〜 11/8 00:00 JST"} -->
+<!--meta {"date":"2026-11-08","title":"ドコモ流出29.5万件で続報／ロート製薬で280万人流出／T:政府がサイバー緊急対策","summary":"ドコモの流出は約29.5万件で確定しahamo受付も停止。ロート製薬は約280万人分、QNAPのNASは乗っ取り報告。政府は約100億円の緊急対策。","window":"11/6 08:00 〜 11/8 03:20 JST"} -->
 <h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
 
-<article class="topic" data-sev="high" data-tag="重大" data-short="SonicWall VPNのMFAが素通りに">
-<header><span class="sev">ヤバい</span><h3>SonicWall SSL VPNで、SAMLのMFAが素通りに（CVE-2026-19868）</h3></header>
-<p class="what">SonicWallのファイアウォールのSSL VPNで、SAMLでかけたMFAを飛ばしてログインできる穴が見つかりました。条件は、別の認証方式で使える正しいID・パスワードを持っていること。</p>
-<p class="what">米CISAが11/6にKEVへ追加済み。つまり、もう実際の攻撃で使われています。</p>
-<p class="ex"><b>たとえると</b>正面玄関は顔認証なのに、裏口は合鍵だけで開く状態。顔認証を入れたつもりでも、裏口を知っている人には意味がありません。</p>
+<article class="topic" data-sev="mid" data-tag="続報" data-short="【続報】ドコモ29.5万件で確定">
+<header><span class="sev">注意</span><h3>【続報】ドコモの流出は約29.5万件で確定、ahamoの受付サイトも止める</h3></header>
+<p class="what">前回は「最大約30万件」の段階でした。第三報で、最大29万4839件（個人約20.4万・法人約9.1万）と内訳が出て、項目は氏名・生年月日・住所・電話番号・契約内容、一部で口座情報も含むと分かりました。</p>
+<p class="what">今回の攻撃は確認されていないものの、予防策として11/6 18時からahamoの新規受付サイトも停止。対象者へのSMS案内が始まり、見舞金も検討中です。</p>
+<p class="ex"><b>たとえると</b>泥棒が入った家で、盗まれた物のリストが確定し、念のため勝手口まで閉めた段階です。</p>
 <dl class="facts">
-<dt>対象</dt><dd>Gen7（SonicOS 7.3.3-7015以前）、Gen8（8.2.2-8015以前）。SAMLログインを使っている場合だけ</dd>
-<dt>直った版</dt><dd><b>7.3.4-7013 / 8.2.3-8015</b>（回避策なし）</dd>
-<dt>CVSS / EPSS</dt><dd>7.1 / 0.62%（パーセンタイル50%）</dd>
+<dt>止まっているもの</dt><dd>ドコモオンラインショップ、My docomo、ahamo新規受付サイト（再開時期は未定）</dd>
+<dt>専用窓口</dt><dd>0120-451-360</dd>
 </dl>
-<p class="act"><b>やること</b>SonicWallを使っているなら、管理画面でバージョンを確認して更新。EPSSは低めでも、KEV入り＝もう撃たれている事実を優先します。</p>
+<p class="act"><b>やること</b>ドコモを名乗るSMSやメールのリンクは踏まない。案内が来たら、公式サイトから自分でアクセスして確認しましょう。</p>
 </article>
 
-<article class="topic" data-sev="high" data-tag="危険" data-short="OpenSSH「SSHole」が9時間で悪用">
-<header><span class="sev">ヤバい</span><h3>OpenSSH「SSHole」、公開から9時間で悪用される（CVE-2026-123158）</h3></header>
-<p class="what">muslを使い、PAMを無効にしたLinux（Alpineの標準構成など）のsshdにある穴です。めちゃくちゃ長いパスワードを送ると、パスワード無効のはずのアカウントに入れてしまいます。</p>
-<p class="what">ハニーポットでは、公開から9時間足らずでroot権限まで取られました。Ubuntuなどglibc系やDropbearは対象外です。</p>
-<p class="ex"><b>たとえると</b>「このドアは使用禁止」の貼り紙が、そのまま合言葉として通ってしまうバグです。</p>
-<dl class="facts">
-<dt>直った版</dt><dd><b>OpenSSH 10.6p2</b>（またはディストリの修正パッケージ）。入れたらsshdを再起動</dd>
-</dl>
-<p class="act"><b>やること</b>Alpineベースのコンテナや機器で、sshを外に開けていないかチェック。台帳にない検証用コンテナが盲点です。</p>
+<article class="topic" data-sev="mid" data-tag="重大" data-short="ロート製薬280万人分流出">
+<header><span class="sev">注意</span><h3>ロート製薬、約280万人分の個人情報が流出。通話録音とカード情報も</h3></header>
+<p class="what">通販の顧客約280万人分の氏名・住所・電話番号などが流出しました。うち9715人はカード番号と有効期限、さらに電話受付の通話録音の一部も持ち出されています。</p>
+<p class="what">入口は電話システムのアカウント情報で、そこを足がかりに複数の顧客管理システムへ広がりました。セキュリティコードは含まれず、二次被害は今のところ確認されていないとしています。</p>
+<p class="ex"><b>たとえると</b>コールセンターの通用口の鍵で入った泥棒が、廊下伝いに顧客台帳の部屋を次々に開けていった形です。</p>
+<p class="act"><b>やること</b>通販を使った人はカード明細を確認。開発・運用側は、外部サービスのアカウントから社内の他システムへ横移動できないか見直しを。</p>
 </article>
 
-<article class="topic" data-sev="mid" data-tag="日本" data-short="ドコモ・TeamSpiritで漏えい">
-<header><span class="sev">注意</span><h3>ドコモ・TeamSpirit・JNSAが漏えいを公表</h3></header>
-<p class="what">ドコモはオンラインショップとMy docomoへの不正アクセスで、最大約30万件の個人情報が流出。TeamSpiritは開発サーバーの認証情報を悪用され、約2.9万件が漏えいしました。</p>
-<p class="what">セキュリティ専門団体のJNSAでも、最大1.5万件の漏えいの可能性が出ています。</p>
-<p class="ex"><b>たとえると</b>合鍵を作業部屋の机に置きっぱなしにしたら、本社の金庫まで開けられた話。開発環境は本番より甘くなりがちです。</p>
-<p class="act"><b>やること</b>「お詫び」メールのリンクは踏まない。開発者は、開発環境にクラウドのキーを平文で置いていないか確認を。</p>
+<article class="topic" data-sev="high" data-tag="重大" data-short="QNAPのNASがPlex経由で侵害">
+<header><span class="sev">ヤバい</span><h3>QNAPのNAS、Plexの穴「Plex2Shell」経由で乗っ取りの報告</h3></header>
+<p class="what">QNAPが11/6、NASに入れたPlex Media Serverの脆弱性（4件の連鎖）を突かれ、NASが侵害された報告を受けていると警告しました。NASのOS自体は対象外で、Plexアプリが入口です。</p>
+<p class="what">4件とも10月にKEV入り済み、つまり以前から攻撃に使われています。更新しても、すでに仕込まれた不正プログラムは消えません。</p>
+<p class="ex"><b>たとえると</b>金庫そのものは頑丈でも、横に置いた「動画再生用の小窓」から手を入れられた状態です。</p>
+<dl class="facts">
+<dt>対象</dt><dd>QNAPのApp Centerから入れたPlex Media Server</dd>
+<dt>CVE</dt><dd>CVE-2026-96652 / 96654 / 96655 / 96656</dd>
+<dt>直った版</dt><dd><b>Plex Media Server 1.43.3.10861以降</b></dd>
+</dl>
+<p class="act"><b>やること</b>Plexを更新し、外部公開（ポート32400）は閉じるかVPN経由に。公開していたなら侵害前提で、OSのクリーン再インストールとパスワード変更を。</p>
 </article>
 
 <h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
 
-<article class="topic" data-sev="low" data-tag="話題" data-short="OpenAI「GPT-6 Cyber」登場">
-<header><span class="sev">注目</span><h3>OpenAIが脆弱性探索の専用モデル「GPT-6 Cyber」を発表</h3></header>
-<p class="what">脆弱性を見つけて直すことに特化したモデルで、まずは一部の顧客だけに提供されます。OpenAIは、Firefoxの深刻な脆弱性を81件見つけたと説明しています（同社の主張）。</p>
-<p class="ex"><b>たとえると</b>疲れ知らずの金属探知機が、地雷原を24時間スキャンし続けるイメージ。見つかるペースは上がる一方です。</p>
-<p class="act"><b>やること</b>見つかる穴が増えれば、パッチも増えます。「出たら数日以内に当てる」習慣がますます効いてきます。</p>
+<article class="topic" data-sev="low" data-tag="話題" data-short="政府がサイバー緊急対策">
+<header><span class="sev">注目</span><h3>政府がサイバー緊急対策、予備費約100億円で「救援隊」も</h3></header>
+<p class="what">相次ぐ漏えいを受け、政府が11/6に緊急対策パッケージを決定しました。官民の専門家による「サイバー救援隊」が被害企業の初動を支え、経産省はAIを使う精鋭チームを11月末までに作ります。</p>
+<p class="what">能動的サイバー防御として攻撃者のサーバーへのアクセスも広げる方針。企業には、不要な個人情報の削除が求められています。</p>
+<p class="ex"><b>たとえると</b>空き巣が続いた町で、消防団のような駆けつけ部隊をつくり、「使わない貴重品は家に置かないで」と回覧板を回した形です。</p>
+<p class="act"><b>やること</b>持っているだけの古い顧客データを棚卸しして削除。外に公開した管理画面や、委託先がつなぐVPNのMFAも点検を。</p>
 </article>
 
-<article class="topic" data-sev="low" data-tag="盲点" data-short="ブラウザ拡張からAIを操れる研究">
-<header><span class="sev">注目</span><h3>ブラウザ拡張からPC上のAIエージェントを操れる、という研究</h3></header>
-<p class="what">悪意のあるブラウザ拡張から、Claude DesktopのDispatch機能を経由して、PCにnpmパッケージを入れさせられることが実証されました。実被害の報告はなく、機能は廃止予定です。</p>
-<p class="ex"><b>たとえると</b>AIエージェントは、PCの鍵を預かる優秀な秘書。その秘書に、怪しい人がメモを渡せる経路があった話です。</p>
-<p class="act"><b>やること</b>AIエージェントを使うなら、ブラウザ拡張は最小限に。エージェントはあなたと同じ権限で動く前提で考えましょう。</p>
-</article>
+<script type="application/json" id="post-terms">[{"term":"NAS","full":"Network Attached Storage","short":"ネットワーク接続の共有ストレージ","long":"LANにつないで複数のPCやスマホから使うファイル保存用の機器。家庭や小規模オフィスで多く、アプリを追加して動画配信などにも使える。外部公開すると攻撃の的になる。"},{"term":"Plex","full":"","short":"自宅の動画を配信するメディアサーバ","long":"自分の動画や音楽をスマホやテレビへ配信するソフト。NASに入れて外出先から見る使い方が多く、外部公開した状態で脆弱性を突かれると機器ごと乗っ取られる。"},{"term":"能動的サイバー防御","full":"Active Cyber Defense","short":"攻撃前に相手側へ手を打つ防御","long":"攻撃を待つのではなく、攻撃者のサーバーなどに事前にアクセスして無害化する考え方。日本では関連法が整備され、政府が段階的に運用を広げている。"},{"term":"サプライチェーン攻撃","full":"","short":"取引先や委託先を経由する攻撃","long":"守りの固い本丸ではなく、委託先・外部サービス・ソフト部品など、つながっている弱い所から侵入する攻撃。被害が発注元や多数の利用企業へ連鎖しやすい。"}]</script>
 
 <section class="words">
 <h2>今日のキーワード</h2>
-<p><b>KEVとEPSS：</b>KEVは「もう撃たれた」事実、EPSSは「これから撃たれそうか」の天気予報。迷ったらKEVから対応しましょう。</p>
+<p><b>サプライチェーン攻撃：</b>本丸ではなく、電話システムや委託先など「つながっている所」から入る攻撃。自社の鍵だけでなく、取引先に渡した合鍵の管理まで見るのが今どきの守り方です。</p>
 </section>
 
 <section class="src">
 <h2>出典</h2>
 <ul>
-<li><a href="https://www.securityweek.com/sonicwall-patches-exploited-sonicos-bug-that-weakens-vpn-logins/">SecurityWeek: SonicWall Patches Exploited SonicOS Vulnerability</a></li>
-<li><a href="https://securityaffairs.com/202581/security/u-s-cisa-adds-sonicwall-sonicos-sslvpn-flaw-to-its-known-exploited-vulnerabilities-catalog.html">Security Affairs: CISA adds SonicWall flaw to KEV</a></li>
-<li><a href="https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html">The Hacker News: OpenSSH SSHole</a></li>
-<li><a href="https://www.docomo.ne.jp/info/notice/page/261105_03_m.html">NTTドコモ お知らせ</a></li>
-<li><a href="https://corp.teamspirit.com/news/information/2026/11/2026_1106_01/">TeamSpirit お知らせ</a></li>
-<li><a href="https://itmedia.co.jp/news/article/2611/06/2000002978">ITmedia NEWS: JNSA</a></li>
-<li><a href="https://thehackernews.com/2026/11/openai-launches-gpt-6-cyber-after-ai.html">The Hacker News: GPT-6 Cyber</a></li>
-<li><a href="https://thehackernews.com/2026/11/malicious-browser-extensions-could-use.html">The Hacker News: Claude Dispatch</a></li>
+<li><a href="https://www.docomo.ne.jp/info/notice/page/261106_00_m.html">NTTドコモ お知らせ（第三報）</a></li>
+<li><a href="https://k-tai.watch.impress.co.jp/docs/news/2154506.html">ケータイ Watch: ドコモ、最大29.5万件の情報が流出</a></li>
+<li><a href="https://www.rohto.co.jp/news/whatsnew/2026/1106_01">ロート製薬 お詫びとお知らせ</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/06/2000002984/">ITmedia NEWS: ロート製薬、約280万人分の個人情報漏えい</a></li>
+<li><a href="https://www.bleepingcomputer.com/news/security/qnap-says-hackers-breaching-nas-devices-in-plex2shell-attacks/">BleepingComputer: QNAP Plex2Shell attacks</a></li>
+<li><a href="https://www.securityweek.com/japan-announces-emergency-cybersecurity-package-following-a-wave-of-attacks/">SecurityWeek: Japan Announces Emergency Cybersecurity Package</a></li>
+<li><a href="https://news.web.nhk/newsweb/na/nd-20261106de71754">NHK: 政府が緊急対策パッケージ決定</a></li>
 </ul>
 </section>
