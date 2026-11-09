@@ -1,0 +1,81 @@
+<!--meta {"date":"2026-11-10","title":"ニトリ3762万件など漏えい5件／OpenSSHの穴がKEV入り／T:Claude新モデル、2割安く","summary":"漏えい公表5件、最大はニトリの3762万件。OpenSSHの穴はKEV入りしJPCERTも注意喚起。Claudeは新モデルが2割安く。","window":"11/9 08:00 〜 11/10 07:45 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 5件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（5件）</h3></header>
+<p class="what">最大は家具の<span class="pn">ニトリ</span>で、通販<span class="pn">ニトリネット</span>の会員など最大3762万件の氏名・住所などが漏えいした恐れがあります。今日は、よそで盗まれたIDやパスワード、認証情報を入口にした事案が目立ちます。</p>
+<ul class="leaks">
+<li><b>早稲田大学（MyWaseda）</b><span class="n">約3,400件</span>教職員などのID・氏名・大学メールと暗号化したパスワード。PHPの穴の対応中に侵入の跡を発見</li>
+<li><b>ニトリ（ニトリネット）</b><span class="n">最大3,762万件</span>会員・購入者の氏名・住所・電話・生年月日、法人会員の担当者情報。パスワードとカード情報は対象外、経路は調査中</li>
+<li><b>無印良品（良品計画、第4報）</b><span class="n">新たに約27万件</span>メールアドレス・氏名・住所・購入履歴など。リスト型攻撃で不正ログイン。代引きの受取先約44万件も追加</li>
+<li><b>ステップゴルフ（ゴルフスクール）</b><span class="n">最大21.5万件</span>氏名・住所に加え、暗号化していない口座番号、顔写真、病歴など</li>
+<li><b>ラクスル（ネット印刷）</b><span class="n">調査中</span>入稿データ内の氏名・住所など。名刺やはがきに載った人も。不正に取得された認証情報が入口</li>
+</ul>
+<p class="ex"><b>たとえると</b>よそで盗まれた合鍵の束を持った泥棒が、別の家の玄関でも片っ端から試している状態です。</p>
+<p class="act"><b>やること</b>利用者: 無印良品などで使ったパスワードを他でも使っていれば変更し、「お詫び」を装うメールやSMSのリンクは踏まない。管理者: ログイン失敗の急増を監視し、システム用の認証情報は期限付きに。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="続報" data-short="【続報】OpenSSHの穴KEV入り">
+<header><span class="sev">ヤバい</span><h3>【続報】OpenSSHの穴「SSHole」、KEV入りしJPCERTも注意喚起</h3></header>
+<p class="what">前回お伝えしたOpenSSHの穴（SSHole）が11/9に米CISAのKEVに入り、国内でもJPCERT/CCが注意喚起を出しました。悪用が公式に確認された段階です。</p>
+<p class="what">対象はmuslを使いPAMを無効にしたLinux（Alpineなど）のsshdで、パスワード認証が有効な場合。すぐ更新できないときは「UsePAM yes」で防げたという検証報告も出ています。</p>
+<p class="ex"><b>たとえると</b>「あの家の裏口が危ない」という噂が、交番の掲示板に正式に貼り出された段階です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-123158</dd>
+<dt>直った版</dt><dd><b>OpenSSH 10.6p2</b>、Alpineは各版の修正パッケージ（例: 3.24は10.3_p1-r2）。更新後にsshdの再起動が必要</dd>
+<dt>KEV対応期限</dt><dd>11/12（米連邦機関向け）</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 家庭用の機器でSSHを外に開けている人だけ、更新を確認。管理者: Alpine系のコンテナや機器を洗い出し、パッケージの版数で修正済みかを確かめてsshdを再起動。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="GPUStackに認証なしの穴">
+<header><span class="sev">ヤバい</span><h3>AI用GPUの管理ツール「GPUStack」、ログインなしで管理者になれる穴が悪用中</h3></header>
+<p class="what">AIモデルを動かすGPUサーバー群を管理するオープンソースのGPUStackで、ログインなしで管理者になれる穴が実際の攻撃に使われ、11/9にKEVへ入りました。</p>
+<p class="what">同じサーバー上のリバースプロキシを通った通信が「自分自身からのアクセス」と見なされ、管理者扱いになるのが原因。偽のヘッダーでも同じことができ、乗っ取ったサーバーで遠隔操作用のシェルを動かされた例があります。</p>
+<p class="ex"><b>たとえると</b>「社員通用口から来た人はノーチェック」の会社で、受付を通った来客まで通用口扱いになっている状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-102895（CVSS 9.8）</dd>
+<dt>直った版</dt><dd><b>GPUStack 2.2.0以降</b>（SAMLの別の穴も直る2.2.2以降を推奨）</dd>
+<dt>回避策</dt><dd>force_auth_localhost=true に設定、プロキシで X-GPUStack-Real-IP ヘッダーを削除</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 個人で試したGPUStackがあれば、外部公開をやめて更新を。管理者: 2.2.2以降へ更新し、サーバーに置いたクラウドの鍵を作り直す。</p>
+</article>
+
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
+
+<article class="topic" data-sev="low" data-tag="最新" data-short="Claude新モデル、2割安く">
+<header><span class="sev">注目</span><h3>Anthropic、最上位AI「Claude Fable 5.2」を公開、料金は2割安く</h3></header>
+<p class="what"><span class="pn">Anthropic</span>が11/10未明（日本時間）、最上位の新モデル<span class="pn">Claude Fable 5.2</span>を公開しました。APIの入力料金は100万トークンあたり10ドルから8ドルへ、2割安くなります。</p>
+<p class="what">コーディングや推論、画像の理解が向上し、応答は約30%速いとしています。安全上の制限を外した同じ中身のMythos 5.2は、審査を通ったサイバー防御や生命科学の組織などに限って提供されます。</p>
+<p class="ex"><b>たとえると</b>一流シェフの特別コースが、味を上げたうえで値下げされたイメージです。</p>
+<p class="act"><b>やること</b>利用者: 難しい調査や長いコード作業だけFableに任せると、利用枠を節約できます。管理者: APIで使うなら料金の見積もりと、社内で使えるモデルの一覧を更新しましょう。</p>
+</article>
+
+<script type="application/json" id="post-terms">[{"term":"OpenSSH","aliases":[],"full":"","short":"SSH接続の定番ソフト","long":"サーバーに遠隔ログインするSSHの標準的なソフト。世界中のLinuxサーバーや機器に入っており、ここに穴があるとサーバーを丸ごと乗っ取られる恐れがある。"},{"term":"SSHole","aliases":["sshole"],"full":"","short":"OpenSSHの認証回避の穴の通称","long":"musl系Linuxで動くOpenSSHのパスワード認証をすり抜けられる脆弱性（CVE-2026-123158）の通称。公開直後から悪用され、KEVにも追加された。"},{"term":"SSH","aliases":[],"full":"Secure Shell","short":"サーバーを遠隔操作する暗号化通信","long":"離れた場所からサーバーや機器にログインして操作するための暗号化された通信方式。外部に開けたまま穴が見つかると、管理者として乗っ取られる危険がある。"},{"term":"Linux","aliases":[],"full":"","short":"サーバーで定番の無料OS","long":"無料で使えるOSで、Webサーバーやクラウド、ルーター、家電まで幅広く動いている。種類（ディストリビューション）が多く、穴の影響範囲も種類ごとに異なる。"},{"term":"UsePAM","aliases":[],"full":"","short":"sshdでPAMを使う設定項目","long":"OpenSSHのサーバー設定で、ログイン確認にPAMを使うかを決める項目。SSHoleでは、これを有効にすると攻撃を防げたと報告されており、更新までの回避策になる。"},{"term":"パッケージ","aliases":["修正パッケージ"],"full":"","short":"配布用にまとめたソフトの単位","long":"Linuxなどでソフトを入れたり更新したりするための配布単位。同じ番号のまま修正だけ入ることもあるため、版数（リビジョン）まで見ないと直ったか判断を誤る。"},{"term":"GPUStack","aliases":[],"full":"","short":"AI用GPUサーバー群の管理ツール","long":"複数のGPUサーバーをまとめてAIモデルを動かすためのオープンソースの管理ツール。計算資源とクラウドの鍵を握るため、乗っ取られると不正利用や情報流出につながる。"},{"term":"リバースプロキシ","aliases":["プロキシ"],"full":"Reverse Proxy","short":"サーバーの手前で通信を中継する仕組み","long":"利用者からの通信をいったん受け取り、裏のサーバーへ渡す中継役。設定次第で外からの通信が内部からに見えてしまい、今回のように認証のすり抜けにつながる。"},{"term":"ヘッダー","aliases":["HTTPヘッダー"],"full":"","short":"通信に付く付帯情報の欄","long":"Webの通信で本文とは別に送られる、送り元や形式などの付帯情報。利用者が自由に書き換えられるため、これを信じて権限を決めるとなりすましを許してしまう。"},{"term":"シェル","aliases":["リバースシェル"],"full":"","short":"OSに命令を打ち込む操作窓口","long":"コマンドを入力してOSを操作するための仕組み。攻撃者に遠隔でシェルを開かれると、サーバー上で好きな命令を実行され、情報を盗まれたり踏み台にされたりする。"},{"term":"PHP","aliases":[],"full":"PHP: Hypertext Preprocessor","short":"Webサイト作りで定番の言語","long":"多くのWebサイトや業務システムで使われるプログラミング言語。広く使われるぶん、穴が見つかると影響が大きく、古い版のまま放置されたサイトが狙われやすい。"},{"term":"MyWaseda","aliases":[],"full":"","short":"早稲田大学の学内ポータル","long":"早稲田大学の学生や教職員が使う学内向けのWebポータル。ログイン情報を管理する仕組みに侵入され、IDや暗号化したパスワードが持ち出された。"},{"term":"暗号化","aliases":[],"full":"","short":"鍵がないと読めない形に変換","long":"データを鍵がないと読めない形に変えること。鍵ごと盗まれたり推測されたりすると元に戻されるため、口座番号などは暗号化して保存し、パスワードはハッシュで保存するのが基本。"},{"term":"入稿データ","aliases":[],"full":"","short":"印刷用に送る原稿ファイル","long":"ネット印刷などで、名刺やはがきを刷るために利用者がアップロードする原稿データ。宛名や連絡先など、注文者以外の個人情報も含まれやすく、漏れると影響が広がる。"},{"term":"Mythos","aliases":["Mythos 5.2","Claude Mythos"],"full":"","short":"制限を外したClaudeの最上位版","long":"AnthropicのClaude Fableと同じ中身で、サイバーや生命科学の安全制限を外した版。悪用の恐れがあるため、審査を通った組織などに限って提供される。"},{"term":"トークン","aliases":[],"full":"","short":"AIが文章を数える単位","long":"AIが文章を処理するときの細かい区切りで、日本語ではおおむね1〜2文字。API料金や利用上限はこの数で決まるため、長い入力ほど費用がかかる。"},{"term":"コーディング","aliases":[],"full":"","short":"プログラムを書く作業","long":"プログラムのコードを書くこと。生成AIが得意とする分野の一つで、AIに書かせたコードは便利な反面、脆弱性が紛れ込んでいないか人が確認する必要がある。"}]</script>
+
+<section class="words">
+<h2>今日のキーワード</h2>
+<p><b>認証情報：</b>IDやパスワード、システム同士が使う鍵の総称。今日はラクスルの漏えいやGPUStackの穴のように、これを盗まれたり偽られたりして入られる事案が並びました。期限付きにして、使わなくなったら消すのが基本です。</p>
+</section>
+
+<section class="src">
+<h2>出典</h2>
+<ul>
+<li><a href="https://www.nitorihd.co.jp/news/items/2b702dbe4d438f7fef74945d68e5bd27_1.pdf">ニトリHD 不正アクセスによる個人情報漏えいの可能性に関するお詫びとお知らせ</a></li>
+<li><a href="https://itmedia.co.jp/news/article/2611/09/2000003039">ITmedia NEWS: ニトリに不正アクセス、最大3762万件</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/09/2000003038/">ITmedia NEWS: 無印良品、リスト型攻撃を確認、新たに約27万件</a></li>
+<li><a href="https://news.web.nhk/newsweb/na/nd-20261109de73077">NHK: 良品計画 約27万件の個人情報漏えいおそれ</a></li>
+<li><a href="https://www.stepgolf.co.jp/news/261107">ステップゴルフ 不正アクセスによる個人情報漏えいのおそれに関するお詫び（第一報）</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/09/2000003021/">ITmedia NEWS: ステップゴルフ、最大21.5万件</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/09/2000003012/">ITmedia NEWS: 早稲田大、個人情報約3400件流出</a></li>
+<li><a href="https://corp.raksul.com/news/press/261109_unauthorized-access/">ラクスル 当社システムへの不正アクセスによる個人情報漏えいのおそれについて</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/09/2000003004/">ITmedia NEWS: ラクスルに不正アクセス</a></li>
+<li><a href="https://www.jpcert.or.jp/newsflash/2026110901.html">JPCERT/CC CyberNewsFlash: OpenSSHにおける認証回避の脆弱性（CVE-2026-123158）</a></li>
+<li><a href="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json">CISA KEV（2026.11.09版）</a></li>
+<li><a href="https://www.stepsecurity.io/blog/cve-2026-123158-sshhole-openssh-musl-password-bypass">StepSecurity: CVE-2026-123158 (SSHole) 検証レポート</a></li>
+<li><a href="https://securityonline.info/gpustack-authentication-bypass-cve-2026-102895-exploited/">SecurityOnline: GPUStack Authentication Bypass CVE-2026-102895 Exploited</a></li>
+<li><a href="https://blog.ostorlab.co/gpustack-auth-bypass-rce-cve-2026-102895.html">Ostorlab: GPUStack Auth Bypass RCE</a></li>
+<li><a href="https://www.macrumors.com/2026/11/09/anthropic-launches-claude-fable-5-2/">MacRumors: Anthropic Launches Claude Fable 5.2 and Mythos 5.2</a></li>
+<li><a href="https://techcrunch.com/2026/11/09/anthropic-releases-new-mythos-and-fable-models-amid-rsi-concerns/">TechCrunch: Anthropic releases new Mythos and Fable models</a></li>
+</ul>
+</section>
