@@ -1,0 +1,79 @@
+<!--meta {"date":"2026-11-09","title":"麻雀185万人など漏えい7件／SonicWallのVPNに悪用の穴／T:Meta、AIで自分用画面","summary":"漏えい公表7件を集約。Maru-Janは全会員のパスワードも流出。SonicWallのVPNはMFA回避が悪用中で、128信金は約6時間停止。","window":"11/6 08:00 〜 11/9 07:45 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 7件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（7件）</h3></header>
+<p class="what">件数最大はメール配信の<span class="pn">アララ</span>で計約8,132万件。今回はパスワードまで漏れた事案が3件あり、使い回している人は他サービスも危険です。</p>
+<ul class="leaks">
+<li><b>シグナルトーク（Maru-Jan）</b><span class="n">約185.6万人</span>全会員のメールアドレスとパスワード。入口は管理システムの機能の悪用</li>
+<li><b>使えるねっと</b><span class="n">調査中</span>契約者向けサイトの顧客情報。暗号化したパスワードが解読された恐れ</li>
+<li><b>日本ネットワークセキュリティ協会</b><span class="n">最大1.5万件</span>管理者の氏名・メール、IDとハッシュ化パスワード</li>
+<li><b>アララ（第3報）</b><span class="n">計約8,132万件</span>メールアドレス、一部で会員属性。別のクラウドから324万件を追加確認</li>
+<li><b>あいおいニッセイ同和損保・三井住友海上</b><span class="n">約48万件</span>証券番号・氏名・住所・電話など。入口は契約者専用ページ</li>
+<li><b>チームスピリット</b><span class="n">約2.9万件</span>取引先担当者などの氏名・メール。開発サーバーに残った認証情報からクラウドへ</li>
+<li><b>teket</b><span class="n">全会員</span>氏名・メールアドレスと発券用コード。サービスを全面停止</li>
+</ul>
+<p class="ex"><b>たとえると</b>合鍵の束ごと盗まれた状態です。同じ鍵を自宅や職場にも使っていたら、そこも開けられます。</p>
+<p class="act"><b>やること</b>利用者: 該当サービスと同じパスワードを使う所はすぐ変更し、MFAをオンに。管理者: パスワードの保存方式と、サーバーに置きっぱなしの認証情報を点検。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="SonicWallのVPNに悪用の穴">
+<header><span class="sev">ヤバい</span><h3>SonicWallのSSL VPN、MFAをすり抜ける穴が悪用中</h3></header>
+<p class="what">会社の入口に多い<span class="pn">SonicWall</span>のファイアウォールで、SSL VPNのログイン確認を飛ばせる穴が実際に悪用されています。KEVにも入りました。</p>
+<p class="what">SAMLでログインさせる設定が対象で、別の認証方式の正しいID・パスワードを持つ攻撃者が、SAML側のMFAを回避できます。回避策はなく、更新が唯一の対策です。</p>
+<p class="ex"><b>たとえると</b>正門で顔認証をしているのに、裏の通用口では社員証を見せるだけで通れてしまう状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-19868（CVSS 7.1、EPSS 0.6%）</dd>
+<dt>直った版</dt><dd><b>Gen 7: SonicOS 7.3.4-7013以降 / Gen 8: 8.2.3-8015</b></dd>
+<dt>注意</dt><dd>Gen 6以前はサポート終了で修正なし。同時に管理画面の穴など6件も修正</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 会社のVPNで見覚えのないログイン通知が来たらIT担当へ。管理者: SonicOSを更新し、SAMLと併用している他のログイン方式を止め、IdPを経由しない接続がないか確認。</p>
+</article>
+
+<article class="topic" data-sev="mid" data-tag="重大" data-short="128信金が約6時間停止">
+<header><span class="sev">注意</span><h3>西日本などの128信金、ATMと窓口が約6時間止まる</h3></header>
+<p class="what">11/6の13時半ごろから、東海・北陸以西の128の信用金庫で、窓口とATMの入出金が使えなくなりました。19時すぎに全面復旧しています。</p>
+<p class="what">信金が共同で使う<span class="pn">しんきん共同センター</span>の西日本センターで障害が起き、一部でネットバンキングや<span class="pn">PayPay</span>へのチャージも停止。PayPayは信金側の通信機器の故障と説明しています。</p>
+<p class="ex"><b>たとえると</b>商店街の全店が共用するレジのサーバーが止まり、どの店でも会計できなくなった形です。</p>
+<p class="act"><b>やること</b>利用者: 11/6午後の振込や引き落としが翌日扱いになっていないか確認。管理者: 共同システムが止まったときの代替手段と、顧客への案内手順を見直しましょう。</p>
+</article>
+
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
+
+<article class="topic" data-sev="low" data-tag="話題" data-short="Meta、AIで自分用画面">
+<header><span class="sev">注目</span><h3>MetaのAI「Muse」、話すだけで自分専用の画面を作る機能</h3></header>
+<p class="what"><span class="pn">Meta</span>のAIエージェントMuseに、チャットで頼むだけで旅行プランや買い物リストなど専用の画面を作れる「スペース」が加わりました。</p>
+<p class="what">作った画面は会話で手直しでき、<span class="pn">Gmail</span>やカレンダーとつなぐと裏で自動更新されます。米国では提供開始済みで、日本語版アプリへの搭載は未確認です。</p>
+<p class="ex"><b>たとえると</b>秘書に「旅行の予定表を作って」と頼むと、毎日自動で書き足してくれる専用ノートが届くイメージです。</p>
+<p class="act"><b>やること</b>利用者: 使えるようになったら、つなぐ外部アプリは必要なものだけに。管理者: 社員が業務メールをAIにつなぐ際のルールを先に決めておきましょう。</p>
+</article>
+
+<script type="application/json" id="post-terms">[{"term":"ファイアウォール","aliases":["FW"],"full":"Firewall","short":"社内と外の通信を見張る関所","long":"ネットワークの出入口で通信を許可・遮断する機器やソフト。VPNの受付も兼ねることが多く、ここに穴があると社内ネットワークへ直接入られる。"},{"term":"暗号化","aliases":[],"full":"","short":"鍵がないと読めない形に変換","long":"データを鍵がないと読めない形に変えること。鍵ごと盗まれたり鍵が推測されたりすると元に戻されるため、パスワードは元に戻せないハッシュで保存するのが基本。"},{"term":"開発サーバー","aliases":["開発環境"],"full":"","short":"開発やテストに使う作業用サーバー","long":"本番の前にプログラムを作ったり試したりするためのサーバー。本番より管理が甘くなりがちで、置き忘れた認証情報から本番やクラウドへ侵入される入口になる。"},{"term":"共同システム","aliases":["共同センター"],"full":"","short":"複数の金融機関で共用する基幹システム","long":"複数の銀行や信用金庫が費用を出し合って共用する、預金や振込を処理するシステム。効率は良いが、1か所の障害で多数の金融機関の窓口やATMが一斉に止まる。"},{"term":"Muse","aliases":[],"full":"","short":"MetaのパーソナルAIエージェント","long":"Metaが2026年9月に始めた個人向けAIエージェント。メールや予定など外部アプリとつないで作業を代行する。便利な反面、つないだアプリの情報をAIが扱える範囲に注意が要る。"},{"term":"発券用コード","aliases":[],"full":"","short":"電子チケットの入場用コード","long":"電子チケットで入場時に提示するQRコードなどの元になる番号。漏れると第三者がチケットを不正に表示・使用できる恐れがあるため、再発行などの対応が必要になる。"}]</script>
+
+<section class="words">
+<h2>今日のキーワード</h2>
+<p><b>パスワードリスト攻撃：</b>どこかで漏れたIDとパスワードの組を、別のサイトで片っ端から試す攻撃。今日は全会員のパスワードが漏れた事案がありました。サービスごとに別のパスワードにしておけば、被害はそこで止まります。</p>
+</section>
+
+<section class="src">
+<h2>出典</h2>
+<ul>
+<li><a href="https://incidents.seory.co.jp/incidents/20261107-715e4a/">シグナルトーク Maru-Jan 会員情報流出（事案まとめ・PR TIMES掲載の公表）</a></li>
+<li><a href="https://prtimes.jp/main/html/rd/p/000000136.000009867.html">シグナルトーク お詫びとご報告（PR TIMES）</a></li>
+<li><a href="https://www.tsukaeru.net/news/20261107/">使えるねっと 不正アクセスおよびお客様情報の漏えいに関するお詫び</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/06/2000002978/">ITmedia NEWS: セキュリティ啓発団体に不正アクセス 最大1.5万件</a></li>
+<li><a href="https://news.web.nhk/newsweb/na/nd-20261106de71934">NHK: アララ、別クラウドから324万件 計8132万件</a></li>
+<li><a href="https://www.release.tdnet.info/inbs/140120261106568143.pdf">ペイクラウドHD 第3報（TDnet）</a></li>
+<li><a href="https://www.sbbit.jp/article/fj/188156">ビジネス+IT: あいおいニッセイ同和損保・三井住友海上 約48万件</a></li>
+<li><a href="https://corp.teamspirit.com/news/information/2026/11/2026_1106_01/">チームスピリット 不正アクセスによる情報漏えいに関するお詫び</a></li>
+<li><a href="https://corporate.teket.jp/news/privacy_261108">teket 不正アクセスによる情報流出に関するお詫び（第一報）</a></li>
+<li><a href="https://rocket-boys.co.jp/security-measures-lab/teket_unauthorized_access_all_members_ticket_codes/">セキュリティ対策Lab: teketに不正アクセス、全会員の氏名・メールアドレスが流出</a></li>
+<li><a href="https://windowsforum.com/news/sonicwall-sonicos-ssl-vpn-saml-bypass-patch-cve-2026-19868-on-gen-7-and-gen-8-firewalls.451277/">WindowsForum: SonicOS SSL-VPN SAML bypass CVE-2026-19868</a></li>
+<li><a href="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json">CISA KEV（2026.11.06版）</a></li>
+<li><a href="https://news.web.nhk/newsweb/na/nd-20261106de71533">NHK: 128信金でシステム障害、午後7時すぎに全面復旧</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/06/2000002971/">ITmedia NEWS: 複数の信金でATM利用・振り込みできず</a></li>
+<li><a href="https://paypay.ne.jp/notice/20261106/m-09/">PayPay 緊急メンテナンスのお知らせ（一部の信用金庫）</a></li>
+<li><a href="https://www.watch.impress.co.jp/docs/news/2154571.html">Impress Watch: Meta、「Muse」で自分専用アプリを作れる新機能「スペース」</a></li>
+<li><a href="https://labmemo.com/meta-muse-spaces-custom-experience-2026-11/">labmemo: Meta Muse Spaces（提供状況の確認）</a></li>
+</ul>
+</section>
