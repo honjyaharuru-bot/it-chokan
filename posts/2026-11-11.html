@@ -4,7 +4,7 @@
 <article class="topic" data-sev="high" data-tag="重大" data-short="Outlookに悪用中の穴">
 <header><span class="sev">ヤバい</span><h3>MS月例更新、Outlookの悪用中の穴をふさぐ。開くだけでログイン情報が漏れる恐れ</h3></header>
 <p class="what"><span class="pn">Microsoft</span>が11/11未明（日本時間）に月例更新を公開し、メールソフト<span class="pn">Outlook</span>の悪用中の穴をふさぎました。細工したファイルを開くだけで<span class="pn">Windows</span>のログイン情報が盗まれる恐れがあり、早めの更新が必要です。</p>
-<p class="what">ファイルを開くとOutlookが警告なしに攻撃者のサーバーへ接続し、NTLMのハッシュが送られてしまいます。ハッシュは手元で解読され、なりすましに使われます。今月は1,000件超を修正し、<span class="pn">Exchange</span>などの緊急の穴も含みます。</p>
+<p class="what">ファイルを開くとOutlookが警告なしに攻撃者のサーバーへ接続し、Windowsの古いログイン認証方式NTLMで使うパスワードのハッシュ（元に戻せない形に変換した値）が送られます。解読されるとなりすましに使われます。今月は1,000件超を修正し、企業向けメールサーバー<span class="pn">Exchange</span>などの緊急の穴も含みます。</p>
 <p class="ex"><b>たとえると</b>封筒を開けただけで、家の合鍵の型を勝手に差出人へ送り返してしまうような状態です。</p>
 <dl class="facts">
 <dt>CVE</dt><dd>CVE-2026-124194（KEV掲載、11/10）</dd>
@@ -16,8 +16,8 @@
 
 <article class="topic" data-sev="high" data-tag="重大" data-short="Chromeの穴も悪用中">
 <header><span class="sev">ヤバい</span><h3>Chromeに今年8件目の悪用中の穴、Googleが修正版</h3></header>
-<p class="what">ブラウザの<span class="pn">Chrome</span>で、すでに攻撃に使われている穴を<span class="pn">Google</span>が修正しました。今年8件目の悪用された穴で、11/10にKEVにも入っています。Chromeの穴も悪用されているので、更新と再起動を。</p>
-<p class="what">XMLを処理する部分で、使い終わったメモリを再び使ってしまう「解放後使用」の不具合です。悪用の手口や攻撃者は公表されていません。Chromiumを土台にする<span class="pn">Edge</span>なども、修正版が出しだい更新が必要です。</p>
+<p class="what">ブラウザの<span class="pn">Chrome</span>で、すでに攻撃に使われている穴を<span class="pn">Google</span>が修正しました。今年8件目で、11/10に米政府の「悪用確認済みリスト」KEVにも入りました。Chromeの穴も悪用中なので、更新と再起動を。</p>
+<p class="what">データを書き表す書式XMLを処理する部分で、使い終わったメモリを再び使ってしまう「解放後使用」の不具合です。Chromeの元になるオープンソースのChromiumを土台にする、Microsoftのブラウザ<span class="pn">Edge</span>なども、修正版が出しだい更新が必要です。</p>
 <p class="ex"><b>たとえると</b>返却済みのロッカーが、前の利用者の鍵でまだ開いてしまうような状態です。</p>
 <dl class="facts">
 <dt>CVE</dt><dd>CVE-2026-125350</dd>
@@ -27,28 +27,42 @@
 <p class="act"><b>やること</b>利用者: メニューの「ヘルプ→Google Chromeについて」で更新し、再起動。管理者: 社内PCのChromeとEdgeの版数を確認し、再起動していない端末に促す。</p>
 </article>
 
-<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 2件">
-<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（2件）</h3></header>
-<p class="what">最大は簿記検定などで知られる<span class="pn">日本商工会議所</span>のネット試験で、最大98万人分の氏名や生年月日、点数が漏えいした恐れがあります。家電量販の<span class="pn">エディオン</span>はカード情報も対象。どちらもWebのシステムに不正なプログラムやファイルを仕込まれていました。</p>
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 3件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（3件）</h3></header>
+<p class="what">最大は簿記検定などで知られる<span class="pn">日本商工会議所</span>のネット試験で、最大98万人分の氏名や生年月日、点数が漏えいした恐れがあります。家電量販の<span class="pn">エディオン</span>はカード情報も。エディオンと商工会議所は、Webに不正なプログラムやファイルを仕込まれていました。</p>
 <ul class="leaks">
 <li><b>エディオン（家電量販、通販サイト）</b><span class="n">最大約1.37万人</span>氏名・住所など、カード情報（最大556回分の入力）、ID・パスワード1,141人分、ギフトカード5,360枚。決済画面が改ざんされ不正プログラムを設置</li>
+<li><b>住友生命「Vitality」（健康増進型保険、NTTデータが受託運用、11/9公表）</b><span class="n">約8万人</span>氏名・住所・電話・生年月日・メールのいずれか、約1,000人は一部を伏せたカード番号。申込システムに不正アクセス</li>
 <li><b>日本商工会議所（簿記などのネット試験）</b><span class="n">最大約98万人</span>氏名・生年月日・性別・合否と点数、任意登録のメール・電話・住所。試験管理の外部サーバーに不正なファイルを設置</li>
 </ul>
 <p class="ex"><b>たとえると</b>お店のレジ横にこっそり盗み見カメラを置かれ、入力した内容がそのまま抜かれていた状態です。</p>
-<p class="act"><b>やること</b>利用者: エディオンの通販でカードを使った人は明細を確認し、同じパスワードを使い回していれば変更。商工会議所を名乗るメールやSMSのリンクは踏まない。管理者: Webサーバーに見覚えのないファイルがないか定期的に点検し、決済画面の改ざん検知を。</p>
+<p class="act"><b>やること</b>利用者: エディオンの通販でカードを使った人は明細を確認し、同じパスワードを使い回していれば変更。商工会議所を名乗るメールやSMSのリンクは踏まない。管理者: Webサーバーの見覚えのないファイルと決済画面の改ざんを定期点検。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="Barracudaの穴が悪用中">
+<header><span class="sev">ヤバい</span><h3>メール防御装置Barracuda ESGに、ログインなしで乗っ取れる穴が悪用中</h3></header>
+<p class="what">企業のメールを検査する米<span class="pn">Barracuda</span>の装置<span class="pn">Email Security Gateway</span>（ESG）で、ログインなしで最上位の管理者権限（root）を奪える穴が悪用され、11/10にKEVへ入りました。使っている組織は急ぎ更新を。</p>
+<p class="what">パスワード変更処理で認証をすり抜ける穴と、時刻設定の処理でOSの命令を実行できる穴を組み合わせます。11/3の攻撃コード公開後、11/9に悪用が確認されました。管理画面を外部に公開していなければ狙われにくいとしています。</p>
+<p class="ex"><b>たとえると</b>郵便検査の受付係の制服を合言葉なしで奪われ、郵便を好きにすり替えられる状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-116606（CVSS 9.3）、CVE-2026-111560（CVSS 8.6）</dd>
+<dt>直った版</dt><dd><b>ESG 9.4.0.030以降</b>（自動更新を止めていれば手動適用）</dd>
+<dt>KEV対応期限</dt><dd>11/13（米連邦機関向け）</dd>
+</dl>
+<p class="act"><b>やること</b>管理者: ESGを9.4.0.030以降へ更新し、管理画面をインターネットから外す。公開していた場合は侵入の痕跡を確認。</p>
 </article>
 
 <h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
 
 <article class="topic" data-sev="low" data-tag="最新" data-short="Claudeが会議に参加">
 <header><span class="sev">注目</span><h3>Anthropic、Claudeが会議に参加して計画を作る「Claude Meetings」などを公開</h3></header>
-<p class="what"><span class="pn">Anthropic</span>が11/11未明（日本時間）、AIの<span class="pn">Claude</span>が会議に参加し、話しながら計画や予定表を作る<span class="pn">Claude Meetings</span>をベータで公開しました。共同編集できる表計算とホワイトボードも有料プランで使えます。</p>
-<p class="what">Meetingsは<span class="pn">Google Meet</span>に参加者として入り、終了後にメモややること一覧を残します。まずTeam/Enterpriseプラン向けで、社外の人が入ると自動で退出します。社内データとつなぐ<span class="pn">Claude Data</span>は正式版になりました。</p>
-<p class="ex"><b>たとえると</b>書記と進行役を兼ねたアシスタントが会議に同席し、話した端から議事録と工程表を書き上げてくれるイメージです。</p>
-<p class="act"><b>やること</b>利用者: 有料プランなら表計算やホワイトボードを試せます。会議に入れる前に参加者へひと声を。管理者: AIを会議に参加させるルールと、つなぐ社内データの範囲を先に決めましょう。</p>
+<p class="what">米AIスタートアップの<span class="pn">Anthropic</span>が11/11未明（日本時間）、対話型AIの<span class="pn">Claude</span>が会議に参加し、話しながら計画や予定表を作る<span class="pn">Claude Meetings</span>をベータで公開しました。共同編集できる表計算とホワイトボードも有料プランで使えます。</p>
+<p class="what">Meetingsはビデオ会議の<span class="pn">Google Meet</span>に参加者として入り、終了後にメモややること一覧を残します。使えるのは当面、法人向けのTeam/Enterpriseプランだけです。社外に情報を渡さないよう、社外の人がいる会議には管理者が許可しない限り参加せず、途中で入ってきたら自動で退出します。社内データとつなぐ<span class="pn">Claude Data</span>は正式版になりました。</p>
+<p class="ex"><b>たとえると</b>書記役のアシスタントが会議に同席し、話した端から議事録と工程表を書いてくれるイメージです。</p>
+<p class="act"><b>やること</b>利用者: AIを会議に入れる前に、参加者へひと声を。管理者: AIを会議に参加させるルールと、つなぐ社内データの範囲を先に決めましょう。</p>
 </article>
 
-<script type="application/json" id="post-terms">[{"term":"月例更新","aliases":["Patch Tuesday","月例パッチ"],"full":"","short":"毎月第2火曜のMS定例更新","long":"Microsoftが毎月第2火曜（日本では翌水曜）にまとめて出すセキュリティ更新。悪用中の穴が含まれる月もあり、公開後は差分から攻撃が広がりやすいため早めの適用が要る。"},{"term":"NTLM","aliases":["NTLMv2"],"full":"NT LAN Manager","short":"Windowsの古い認証方式","long":"Windowsで使われてきた古いログイン確認の仕組み。パスワードから作ったハッシュをやり取りするため、盗まれると解読やなりすましに悪用される。Microsoftも廃止を進めている。"},{"term":"Exchange","aliases":["Exchange Server"],"full":"","short":"Microsoftのメールサーバー","long":"企業がメールや予定表を管理するために自社で運用するMicrosoftのサーバーソフト。外部に公開されることが多く、穴が見つかると社内への侵入口として狙われやすい。"},{"term":"KB","aliases":[],"full":"Knowledge Base","short":"MS更新プログラムの番号","long":"Microsoftが更新プログラムごとに付ける番号（例: KB5132061）。自分のPCに今月の更新が入ったかを確かめるときの目印になり、管理者は配布状況の確認に使う。"},{"term":"XML","aliases":[],"full":"Extensible Markup Language","short":"データを記述する汎用の書式","long":"タグで項目を区切ってデータを表す書式で、Webや設定ファイルで広く使われる。ブラウザもこれを読み込んで処理するため、処理部分の穴は細工したページを開くだけで突かれうる。"},{"term":"解放後使用","aliases":["use-after-free","UAF"],"full":"Use After Free","short":"使用済みメモリを再利用する不具合","long":"使い終えて返したメモリ領域を、プログラムが誤ってまた使ってしまう不具合。攻撃者がその領域に仕込んだデータを実行させられるため、ブラウザの乗っ取りによく使われる。"},{"term":"Chromium","aliases":[],"full":"","short":"Chromeなどの土台のブラウザ","long":"Googleが中心に開発するオープンソースのブラウザで、ChromeやEdgeなどの土台。ここに穴があると多くのブラウザが同時に影響を受けるため、各社の更新を確認する必要がある。"},{"term":"Claude","aliases":[],"full":"","short":"Anthropicの対話型AI","long":"米Anthropicが開発する生成AI。文章作成やコーディング、資料作りなどをこなす。会議や社内データにつなぐ機能が増えるほど、AIに見せる情報の範囲を決める管理が重要になる。"},{"term":"Claude Meetings","aliases":["Meetings"],"full":"","short":"Claudeが会議に参加する機能","long":"Claudeがビデオ会議に参加者として入り、計画や予定表を作り、終了後にメモややること一覧を残す機能。会話内容をAIが扱うため、参加者への周知と社内ルールが要る。"},{"term":"Claude Data","aliases":["Claude Dashboards"],"full":"","short":"社内データとつなぐClaudeの機能","long":"Claudeを社内のデータ基盤や顧客管理システムにつなぎ、質問にグラフや解説で答える機能。便利な反面、どのデータを見せるかの権限設計を誤ると情報漏えいにつながる。"},{"term":"Google Meet","aliases":["Meet"],"full":"","short":"Googleのビデオ会議サービス","long":"Googleが提供するブラウザやアプリで使えるビデオ会議サービス。AIを参加させると会話が記録・処理されるため、社外の人がいる会議での扱いなど事前のルール作りが要る。"},{"term":"ベータ","aliases":["ベータ版"],"full":"Beta","short":"正式公開前の試用版","long":"正式版の前に利用者に試してもらう段階の提供形態。機能や仕様が変わったり不具合が残ったりすることがあるため、重要な業務で使う前に挙動を確かめる必要がある。"},{"term":"改ざん","aliases":["改竄"],"full":"","short":"無断で中身を書き換えること","long":"Webページやプログラムを攻撃者が勝手に書き換えること。決済画面が改ざんされると、利用者が正規の画面だと思って入力したカード情報がそのまま盗まれる。"}]</script>
+<script type="application/json" id="post-terms">[{"term":"月例更新","aliases":["Patch Tuesday","月例パッチ"],"full":"","short":"毎月第2火曜のMS定例更新","long":"Microsoftが毎月第2火曜（日本では翌水曜）にまとめて出すセキュリティ更新。悪用中の穴が含まれる月もあり、公開後は差分から攻撃が広がりやすいため早めの適用が要る。"},{"term":"NTLM","aliases":["NTLMv2"],"full":"NT LAN Manager","short":"Windowsの古い認証方式","long":"Windowsで使われてきた古いログイン確認の仕組み。パスワードから作ったハッシュをやり取りするため、盗まれると解読やなりすましに悪用される。Microsoftも廃止を進めている。"},{"term":"Exchange","aliases":["Exchange Server"],"full":"","short":"Microsoftのメールサーバー","long":"企業がメールや予定表を管理するために自社で運用するMicrosoftのサーバーソフト。外部に公開されることが多く、穴が見つかると社内への侵入口として狙われやすい。"},{"term":"KB","aliases":[],"full":"Knowledge Base","short":"MS更新プログラムの番号","long":"Microsoftが更新プログラムごとに付ける番号（例: KB5132061）。自分のPCに今月の更新が入ったかを確かめるときの目印になり、管理者は配布状況の確認に使う。"},{"term":"XML","aliases":[],"full":"Extensible Markup Language","short":"データを記述する汎用の書式","long":"タグで項目を区切ってデータを表す書式で、Webや設定ファイルで広く使われる。ブラウザもこれを読み込んで処理するため、処理部分の穴は細工したページを開くだけで突かれうる。"},{"term":"解放後使用","aliases":["use-after-free","UAF"],"full":"Use After Free","short":"使用済みメモリを再利用する不具合","long":"使い終えて返したメモリ領域を、プログラムが誤ってまた使ってしまう不具合。攻撃者がその領域に仕込んだデータを実行させられるため、ブラウザの乗っ取りによく使われる。"},{"term":"Chromium","aliases":[],"full":"","short":"Chromeなどの土台のブラウザ","long":"Googleが中心に開発するオープンソースのブラウザで、ChromeやEdgeなどの土台。ここに穴があると多くのブラウザが同時に影響を受けるため、各社の更新を確認する必要がある。"},{"term":"Claude","aliases":[],"full":"","short":"Anthropicの対話型AI","long":"米Anthropicが開発する生成AI。文章作成やコーディング、資料作りなどをこなす。会議や社内データにつなぐ機能が増えるほど、AIに見せる情報の範囲を決める管理が重要になる。"},{"term":"Claude Meetings","aliases":["Meetings"],"full":"","short":"Claudeが会議に参加する機能","long":"Claudeがビデオ会議に参加者として入り、計画や予定表を作り、終了後にメモややること一覧を残す機能。会話内容をAIが扱うため、参加者への周知と社内ルールが要る。"},{"term":"Claude Data","aliases":["Claude Dashboards"],"full":"","short":"社内データとつなぐClaudeの機能","long":"Claudeを社内のデータ基盤や顧客管理システムにつなぎ、質問にグラフや解説で答える機能。便利な反面、どのデータを見せるかの権限設計を誤ると情報漏えいにつながる。"},{"term":"Google Meet","aliases":["Meet"],"full":"","short":"Googleのビデオ会議サービス","long":"Googleが提供するブラウザやアプリで使えるビデオ会議サービス。AIを参加させると会話が記録・処理されるため、社外の人がいる会議での扱いなど事前のルール作りが要る。"},{"term":"ベータ","aliases":["ベータ版"],"full":"Beta","short":"正式公開前の試用版","long":"正式版の前に利用者に試してもらう段階の提供形態。機能や仕様が変わったり不具合が残ったりすることがあるため、重要な業務で使う前に挙動を確かめる必要がある。"},{"term":"ESG","aliases":["Email Security Gateway"],"full":"Email Security Gateway","short":"Barracudaのメール検査装置","long":"企業に届くメールを手前で検査し、迷惑メールやウイルス付きメールを止めるBarracudaの装置。全メールが通る要所なので、乗っ取られるとメールの盗み見や改ざんの足場にされる。"},{"term":"Vitality","aliases":["住友生命Vitality"],"full":"","short":"住友生命の健康増進型保険","long":"運動や健診の結果に応じて保険料などが変わる住友生命の保険プログラム。申込や利用の情報をシステムで扱うため、運用を任せた委託先が侵害されると加入者の個人情報が漏れうる。"},{"term":"改ざん","aliases":["改竄"],"full":"","short":"無断で中身を書き換えること","long":"Webページやプログラムを攻撃者が勝手に書き換えること。決済画面が改ざんされると、利用者が正規の画面だと思って入力したカード情報がそのまま盗まれる。"}]</script>
 
 <section class="words">
 <h2>今日のキーワード</h2>
@@ -67,6 +81,10 @@
 <li><a href="https://www.nikkei.com/nkd/disclosure/tdnr/20261110571388/">エディオン 適時開示: 当社ECサイトへの不正アクセスに伴う個人情報の漏洩およびサービスの停止について（11/10）</a></li>
 <li><a href="https://incidents.seory.co.jp/incidents/20261106-d0edad/">エディオン 不正アクセス事案まとめ（第1報・第2報）</a></li>
 <li><a href="https://gekiryu-online.jp/2026/11/260766">激流オンライン: エディオン、不正アクセスによる個人情報漏えいで各種サービスを停止</a></li>
+<li><a href="https://www.nttdata.com/global/ja/news/release/2026/110900/">NTTデータ ニュースリリース（11/9）</a></li>
+<li><a href="https://www.sumitomolife.co.jp/news/detail/newsrelease_261109.html">住友生命 お知らせ（11/9）</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/10/2000003051/">ITmedia NEWS: NTTデータ、住友生命から受託したシステムに不正アクセス 約8万人</a></li>
+<li><a href="https://securityonline.info/barracuda-esg-vulnerability-exploited-poc/">SecurityOnline: Barracuda ESG Vulnerability Chain Exploited in the Wild</a></li>
 <li><a href="https://techcrunch.com/2026/11/10/anthropic-launches-claude-meetings-to-turn-workplace-discussions-into-plans-and-tasks/">TechCrunch: Anthropic launches Claude Meetings</a></li>
 <li><a href="https://runtimewire.com/article/anthropic-claude-whiteboards-sheets-data-launch">RuntimeWire: Anthropic launches Claude Whiteboards, Sheets and Data</a></li>
 </ul>
