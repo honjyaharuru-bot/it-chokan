@@ -138,3 +138,26 @@ details.more .facts{margin:0;padding:8px 12px}
 /* v7: proper nouns (company / product / service names) - subtle emphasis for skimming */
 .topic .pn{font-weight:700}
 
+
+/* ---- v8: navigation / top page / archive / 404 ---- */
+.navlinks{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
+.navlinks a{font-size:.8rem;font-weight:700;text-decoration:none;color:#14213d;border:2px solid #14213d;border-radius:99px;padding:2px 12px;background:#fff}
+.issue-date{margin:8px 0 2px;font-weight:700}
+.issue-date .d{font-size:1.6rem;font-weight:800;margin-right:4px}
+.recovered{background:#fff3c4;border:2px solid #14213d;border-radius:10px;padding:6px 10px;font-size:.85rem;margin:8px 0}
+.more-issues{text-align:center;margin:18px 0}
+.more-issues a{display:inline-block;font-weight:700;border:2px solid #14213d;border-radius:99px;padding:6px 16px;background:#fff;color:#14213d;text-decoration:none;box-shadow:3px 3px 0 #14213d}
+ul.archive{list-style:none;padding:0;margin:12px 0}
+ul.archive li{margin:0 0 8px}
+ul.archive li.month{font-weight:800;margin:16px 0 6px;font-size:.95rem}
+ul.archive a,ul.archive li.off{display:block;background:#fff;border:2px solid #14213d;border-radius:12px;padding:8px 12px;color:#14213d;text-decoration:none}
+ul.archive a{box-shadow:3px 3px 0 #14213d}
+ul.archive li.off{opacity:.55;border-style:dashed}
+ul.archive .ad{font-weight:800;font-size:.85rem;margin-right:6px}
+ul.archive .at{display:block;font-size:.85rem;margin-top:2px}
+ul.archive .at .line{display:block}
+ul.archive .rc{background:#ffd23f;border-radius:6px;padding:0 6px;font-size:.7rem;font-weight:700}
+.nf{text-align:center;margin:24px 0}
+.nf-card{display:block;text-align:left;background:#fff;border:2px solid #14213d;border-radius:14px;box-shadow:4px 4px 0 #14213d;padding:12px 14px;margin:16px 0;color:#14213d;text-decoration:none}
+.nf-card .ad{font-weight:800}.nf-card .at .line{display:block}.nf-card .go{display:block;margin-top:6px;font-weight:700;color:#3a86ff}
+
