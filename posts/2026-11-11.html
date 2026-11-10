@@ -1,0 +1,73 @@
+<!--meta {"date":"2026-11-11","title":"Outlookに悪用中の穴、更新を／Chromeの穴も悪用、更新を／T:Claudeが会議に参加","summary":"Outlookの悪用中の穴を月例更新でふさぐ。Chromeの穴も悪用。漏えいは商工会議所の試験で最大98万人。Claudeが会議に参加。","window":"11/10 05:30 〜 11/11 05:30 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="Outlookに悪用中の穴">
+<header><span class="sev">ヤバい</span><h3>MS月例更新、Outlookの悪用中の穴をふさぐ。開くだけでログイン情報が漏れる恐れ</h3></header>
+<p class="what"><span class="pn">Microsoft</span>が11/11未明（日本時間）に月例更新を公開し、メールソフト<span class="pn">Outlook</span>の悪用中の穴をふさぎました。細工したファイルを開くだけで<span class="pn">Windows</span>のログイン情報が盗まれる恐れがあり、早めの更新が必要です。</p>
+<p class="what">ファイルを開くとOutlookが警告なしに攻撃者のサーバーへ接続し、NTLMのハッシュが送られてしまいます。ハッシュは手元で解読され、なりすましに使われます。今月は1,000件超を修正し、<span class="pn">Exchange</span>などの緊急の穴も含みます。</p>
+<p class="ex"><b>たとえると</b>封筒を開けただけで、家の合鍵の型を勝手に差出人へ送り返してしまうような状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-124194（KEV掲載、11/10）</dd>
+<dt>更新</dt><dd><b>Windows 11: KB5132061 / KB5131087</b>、Windows 10（延長サポート）: KB5131096</dd>
+<dt>KEV対応期限</dt><dd>11/24（米連邦機関向け）</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: Windows Updateを実行して再起動し、心当たりのない添付ファイルは開かない。管理者: 今月の更新を優先して配布し、外部への不要な通信を絞ってNTLMの利用を減らす。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="Chromeの穴も悪用中">
+<header><span class="sev">ヤバい</span><h3>Chromeに今年8件目の悪用中の穴、Googleが修正版</h3></header>
+<p class="what">ブラウザの<span class="pn">Chrome</span>で、すでに攻撃に使われている穴を<span class="pn">Google</span>が修正しました。今年8件目の悪用された穴で、11/10にKEVにも入っています。Chromeの穴も悪用されているので、更新と再起動を。</p>
+<p class="what">XMLを処理する部分で、使い終わったメモリを再び使ってしまう「解放後使用」の不具合です。悪用の手口や攻撃者は公表されていません。Chromiumを土台にする<span class="pn">Edge</span>なども、修正版が出しだい更新が必要です。</p>
+<p class="ex"><b>たとえると</b>返却済みのロッカーが、前の利用者の鍵でまだ開いてしまうような状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-125350</dd>
+<dt>直った版</dt><dd><b>Chrome 157.0.8103.50以降</b>（Windows/Macは .50/.51）</dd>
+<dt>KEV対応期限</dt><dd>11/24（米連邦機関向け）</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: メニューの「ヘルプ→Google Chromeについて」で更新し、再起動。管理者: 社内PCのChromeとEdgeの版数を確認し、再起動していない端末に促す。</p>
+</article>
+
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 2件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（2件）</h3></header>
+<p class="what">最大は簿記検定などで知られる<span class="pn">日本商工会議所</span>のネット試験で、最大98万人分の氏名や生年月日、点数が漏えいした恐れがあります。家電量販の<span class="pn">エディオン</span>はカード情報も対象。どちらもWebのシステムに不正なプログラムやファイルを仕込まれていました。</p>
+<ul class="leaks">
+<li><b>エディオン（家電量販、通販サイト）</b><span class="n">最大約1.37万人</span>氏名・住所など、カード情報（最大556回分の入力）、ID・パスワード1,141人分、ギフトカード5,360枚。決済画面が改ざんされ不正プログラムを設置</li>
+<li><b>日本商工会議所（簿記などのネット試験）</b><span class="n">最大約98万人</span>氏名・生年月日・性別・合否と点数、任意登録のメール・電話・住所。試験管理の外部サーバーに不正なファイルを設置</li>
+</ul>
+<p class="ex"><b>たとえると</b>お店のレジ横にこっそり盗み見カメラを置かれ、入力した内容がそのまま抜かれていた状態です。</p>
+<p class="act"><b>やること</b>利用者: エディオンの通販でカードを使った人は明細を確認し、同じパスワードを使い回していれば変更。商工会議所を名乗るメールやSMSのリンクは踏まない。管理者: Webサーバーに見覚えのないファイルがないか定期的に点検し、決済画面の改ざん検知を。</p>
+</article>
+
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
+
+<article class="topic" data-sev="low" data-tag="最新" data-short="Claudeが会議に参加">
+<header><span class="sev">注目</span><h3>Anthropic、Claudeが会議に参加して計画を作る「Claude Meetings」などを公開</h3></header>
+<p class="what"><span class="pn">Anthropic</span>が11/11未明（日本時間）、AIの<span class="pn">Claude</span>が会議に参加し、話しながら計画や予定表を作る<span class="pn">Claude Meetings</span>をベータで公開しました。共同編集できる表計算とホワイトボードも有料プランで使えます。</p>
+<p class="what">Meetingsは<span class="pn">Google Meet</span>に参加者として入り、終了後にメモややること一覧を残します。まずTeam/Enterpriseプラン向けで、社外の人が入ると自動で退出します。社内データとつなぐ<span class="pn">Claude Data</span>は正式版になりました。</p>
+<p class="ex"><b>たとえると</b>書記と進行役を兼ねたアシスタントが会議に同席し、話した端から議事録と工程表を書き上げてくれるイメージです。</p>
+<p class="act"><b>やること</b>利用者: 有料プランなら表計算やホワイトボードを試せます。会議に入れる前に参加者へひと声を。管理者: AIを会議に参加させるルールと、つなぐ社内データの範囲を先に決めましょう。</p>
+</article>
+
+<script type="application/json" id="post-terms">[{"term":"月例更新","aliases":["Patch Tuesday","月例パッチ"],"full":"","short":"毎月第2火曜のMS定例更新","long":"Microsoftが毎月第2火曜（日本では翌水曜）にまとめて出すセキュリティ更新。悪用中の穴が含まれる月もあり、公開後は差分から攻撃が広がりやすいため早めの適用が要る。"},{"term":"NTLM","aliases":["NTLMv2"],"full":"NT LAN Manager","short":"Windowsの古い認証方式","long":"Windowsで使われてきた古いログイン確認の仕組み。パスワードから作ったハッシュをやり取りするため、盗まれると解読やなりすましに悪用される。Microsoftも廃止を進めている。"},{"term":"Exchange","aliases":["Exchange Server"],"full":"","short":"Microsoftのメールサーバー","long":"企業がメールや予定表を管理するために自社で運用するMicrosoftのサーバーソフト。外部に公開されることが多く、穴が見つかると社内への侵入口として狙われやすい。"},{"term":"KB","aliases":[],"full":"Knowledge Base","short":"MS更新プログラムの番号","long":"Microsoftが更新プログラムごとに付ける番号（例: KB5132061）。自分のPCに今月の更新が入ったかを確かめるときの目印になり、管理者は配布状況の確認に使う。"},{"term":"XML","aliases":[],"full":"Extensible Markup Language","short":"データを記述する汎用の書式","long":"タグで項目を区切ってデータを表す書式で、Webや設定ファイルで広く使われる。ブラウザもこれを読み込んで処理するため、処理部分の穴は細工したページを開くだけで突かれうる。"},{"term":"解放後使用","aliases":["use-after-free","UAF"],"full":"Use After Free","short":"使用済みメモリを再利用する不具合","long":"使い終えて返したメモリ領域を、プログラムが誤ってまた使ってしまう不具合。攻撃者がその領域に仕込んだデータを実行させられるため、ブラウザの乗っ取りによく使われる。"},{"term":"Chromium","aliases":[],"full":"","short":"Chromeなどの土台のブラウザ","long":"Googleが中心に開発するオープンソースのブラウザで、ChromeやEdgeなどの土台。ここに穴があると多くのブラウザが同時に影響を受けるため、各社の更新を確認する必要がある。"},{"term":"Claude","aliases":[],"full":"","short":"Anthropicの対話型AI","long":"米Anthropicが開発する生成AI。文章作成やコーディング、資料作りなどをこなす。会議や社内データにつなぐ機能が増えるほど、AIに見せる情報の範囲を決める管理が重要になる。"},{"term":"Claude Meetings","aliases":["Meetings"],"full":"","short":"Claudeが会議に参加する機能","long":"Claudeがビデオ会議に参加者として入り、計画や予定表を作り、終了後にメモややること一覧を残す機能。会話内容をAIが扱うため、参加者への周知と社内ルールが要る。"},{"term":"Claude Data","aliases":["Claude Dashboards"],"full":"","short":"社内データとつなぐClaudeの機能","long":"Claudeを社内のデータ基盤や顧客管理システムにつなぎ、質問にグラフや解説で答える機能。便利な反面、どのデータを見せるかの権限設計を誤ると情報漏えいにつながる。"},{"term":"Google Meet","aliases":["Meet"],"full":"","short":"Googleのビデオ会議サービス","long":"Googleが提供するブラウザやアプリで使えるビデオ会議サービス。AIを参加させると会話が記録・処理されるため、社外の人がいる会議での扱いなど事前のルール作りが要る。"},{"term":"ベータ","aliases":["ベータ版"],"full":"Beta","short":"正式公開前の試用版","long":"正式版の前に利用者に試してもらう段階の提供形態。機能や仕様が変わったり不具合が残ったりすることがあるため、重要な業務で使う前に挙動を確かめる必要がある。"},{"term":"改ざん","aliases":["改竄"],"full":"","short":"無断で中身を書き換えること","long":"Webページやプログラムを攻撃者が勝手に書き換えること。決済画面が改ざんされると、利用者が正規の画面だと思って入力したカード情報がそのまま盗まれる。"}]</script>
+
+<section class="words">
+<h2>今日のキーワード</h2>
+<p><b>ゼロデイ：</b>修正が出る前から攻撃に使われていた穴のこと。今日はOutlookとChromeの2件がそれにあたり、どちらもKEVに入りました。「すでに狙われている」合図なので、ほかの更新より先に当てて、再起動まで済ませるのが鉄則です。</p>
+</section>
+
+<section class="src">
+<h2>出典</h2>
+<ul>
+<li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-november-2026-patch-tuesday-fixes-1-235-flaws-outlook-zero-day/">BleepingComputer: Microsoft November 2026 Patch Tuesday fixes Outlook zero-day</a></li>
+<li><a href="https://www.securityweek.com/exploited-outlook-zero-day-among-1094-flaws-patched-by-microsoft/">SecurityWeek: Exploited Outlook Zero-Day Among 1,094 Flaws Patched by Microsoft</a></li>
+<li><a href="https://thehackernews.com/2026/11/google-issues-chrome-security-update.html">The Hacker News: Google Issues Chrome Security Update for Eighth Actively Exploited Zero-Day of 2026</a></li>
+<li><a href="https://www.bleepingcomputer.com/news/security/google-patches-eighth-chrome-zero-day-exploited-in-attacks-this-year/">BleepingComputer: Google patches eighth Chrome zero-day exploited in attacks this year</a></li>
+<li><a href="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json">CISA KEV（2026.11.10版）</a></li>
+<li><a href="https://www.jcci.or.jp/news/news/2026/1110170000.html">日本商工会議所 商工会議所ネット試験管理システムへの不正アクセスによる受験者情報漏えいの可能性について</a></li>
+<li><a href="https://www.nikkei.com/nkd/disclosure/tdnr/20261110571388/">エディオン 適時開示: 当社ECサイトへの不正アクセスに伴う個人情報の漏洩およびサービスの停止について（11/10）</a></li>
+<li><a href="https://incidents.seory.co.jp/incidents/20261106-d0edad/">エディオン 不正アクセス事案まとめ（第1報・第2報）</a></li>
+<li><a href="https://gekiryu-online.jp/2026/11/260766">激流オンライン: エディオン、不正アクセスによる個人情報漏えいで各種サービスを停止</a></li>
+<li><a href="https://techcrunch.com/2026/11/10/anthropic-launches-claude-meetings-to-turn-workplace-discussions-into-plans-and-tasks/">TechCrunch: Anthropic launches Claude Meetings</a></li>
+<li><a href="https://runtimewire.com/article/anthropic-claude-whiteboards-sheets-data-launch">RuntimeWire: Anthropic launches Claude Whiteboards, Sheets and Data</a></li>
+</ul>
+</section>
