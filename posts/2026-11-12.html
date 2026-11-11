@@ -1,0 +1,78 @@
+<!--meta {"date":"2026-11-12","title":"ドコモ5G SAで再び障害／4786万件など漏えい3件／T:GeminiがCarPlayに","summary":"ドコモの5G SAで再び全国で障害。漏えいはユミルリンクの4786万件など3件。N-ableの管理ツールに攻撃コード。GeminiがCarPlayに。","window":"11/11 05:30 〜 11/12 05:30 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="mid" data-tag="重大" data-short="ドコモ5G SAで再び障害">
+<header><span class="sev">注意</span><h3>ドコモの5G SAで再び全国障害、通話やデータが半日近くつながりにくく</h3></header>
+<p class="what">携帯大手の<span class="pn">NTTドコモ</span>で11/11 10:34ごろから、5G専用の設備だけで動く新しい方式「5G SA」の契約者が、全国で通話・データ通信・SMSを使いにくくなりました。5G SAの障害は11/5に続いて再びで、同日夜に復旧しています。</p>
+<p class="what">4Gや従来型の5G、緊急通報は影響を受けていません。ドコモは不正アクセスやサイバー攻撃の形跡はないとしています。原因は、5G SAの契約者を受け持つ交換機（通信をつなぐ設備）の輻輳だと報じられ、11/5と同じです。</p>
+<p class="ex"><b>たとえると</b>新しくできた高速道路だけが料金所の渋滞で止まり、下の一般道（4G）は普通に流れていた状態です。</p>
+<dl class="facts">
+<dt>発生</dt><dd>11/11 10:34ごろ〜同日19時すぎに復旧（報道）</dd>
+<dt>対象</dt><dd>5G SAの契約者（4G・従来型5G・MVNO・緊急通報は対象外）</dd>
+<dt>前回</dt><dd>11/5に約14時間、同じ5G SAで障害</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 同じ症状が出たら、設定のネットワークを「4G」にして再起動するか、機内モードを入れて切る。管理者: 社用スマホが止まったときのために、別の回線や連絡手段を決めておく。</p>
+</article>
+
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 3件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（3件）</h3></header>
+<p class="what">今日の漏えい公表は3件です。最大はメール配信を請け負う<span class="pn">ユミルリンク</span>で、件数が4786万件と確定しました。3件のうち2件は、パスワードを元に戻せない形に変えた値（ハッシュ）も漏れています。</p>
+<ul class="leaks">
+<li><b>ユミルリンク（メール配信「Cuenote FC」、JR東海・@cosmeなどが利用）</b><span class="n">約4,786万件</span>メールアドレス、会員ID、氏名、ハッシュ化したパスワードなど。システムの穴から不正プログラムを置かれ、管理画面から持ち出し</li>
+<li><b>靖国神社（授与品の通販サイト）</b><span class="n">約1.45万件</span>氏名・メールアドレス、ハッシュ化したパスワードと生成用の情報。元のパスワードを特定される恐れ</li>
+<li><b>SMBC日興証券（従業員持株会の管理システム）</b><span class="n">最大約5.6万人</span>氏名・住所・保有残高・配当、振込用の口座情報。11/9に不正アクセスを確認、経路は非公表</li>
+</ul>
+<p class="ex"><b>たとえると</b>会員名簿を預かる倉庫に忍び込まれ、名簿と一緒に「合鍵の型」まで持ち出された状態です。</p>
+<p class="act"><b>やること</b>利用者: 靖国神社やメルマガ登録先と同じパスワードを他でも使っていれば変更し、「お詫び」を装うメールのリンクは踏まない。管理者: パスワードの保存方式と、管理画面に入れる経路を点検。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="危険" data-short="N-ableに攻撃コード33件">
+<header><span class="sev">ヤバい</span><h3>IT業者向け遠隔管理ツールN-centralに、攻撃コード33件が公開。修正は7件のみ</h3></header>
+<p class="what">企業のPCを外部のIT業者がまとめて管理する遠隔管理ツール<span class="pn">N-central</span>（米<span class="pn">N-able</span>製）で、乗っ取りにつながる穴33件の攻撃コードが公開されました。修正版で直ったのはまだ7件で、使っている業者は急ぎ更新が必要です。</p>
+<p class="what">研究者が開発元に知らせないまま11/9に公開し、N-ableはクラウド版を一時止めました。11/10公開の修正版で7件をふさぎ、クラウド版は再開しています。囮のサーバー（ハニーポット）では攻撃の試みが確認されました。</p>
+<p class="ex"><b>たとえると</b>管理会社が預かるマンション全戸の合鍵庫について、こじ開け方の手順書が33通り出回り、まだ7通りしかふさがれていない状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-125878〜125883、CVE-2026-91000（計7件を修正）</dd>
+<dt>直った版</dt><dd><b>N-central 2026.4 Hotfix 2（2026.4.1.26）</b></dd>
+<dt>注意</dt><dd>遠隔操作機能は一時無効化。残りの穴は次の修正版で対応予定</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: PCの管理をIT業者に任せている会社は、業者に対応状況を確認。管理者: 緊急の修正版Hotfix 2を当てて端末側の常駐ソフトも更新し、自社に置くオンプレミス版は更新まで止めておく。</p>
+</article>
+
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
+
+<article class="topic" data-sev="low" data-tag="最新" data-short="GeminiがCarPlayに">
+<header><span class="sev">注目</span><h3>Googleの対話型AI「Gemini」、単体アプリがCarPlayで使えるように</h3></header>
+<p class="what"><span class="pn">Google</span>の対話型AI<span class="pn">Gemini</span>のアプリが、iPhoneを車の画面につなぐ<span class="pn">CarPlay</span>で使えるようになりました。11/12未明（日本時間）から全世界で順次配信され、運転中も声で会話できます。</p>
+<p class="what">画面には声だけでやり取りする<span class="pn">Gemini Live</span>が出て、話の途中で割り込んで話題を変えられます。<span class="pn">Gmail</span>やカレンダーとつなぐと、今日の予定や未読メールの要約を読み上げます。対象はGemini Liveが使える全言語で、iPhoneのGeminiアプリを最新版にすれば使えます。</p>
+<p class="ex"><b>たとえると</b>予定もメールも把握している秘書が、助手席に座ってくれるイメージです。</p>
+<p class="act"><b>やること</b>利用者: 運転中は画面を見ずに声だけで使い、メールの読み上げは同乗者にも聞こえる点に注意。管理者: 社用のiPhoneで業務メールとAIをつなぐときのルールを決めておきましょう。</p>
+</article>
+
+<script type="application/json" id="post-terms">[{"term":"5G SA","aliases":["5Gスタンドアローン"],"full":"5G Standalone","short":"5G専用設備だけで動く方式","long":"基地局から中枢の設備まで5G専用で動かす通信方式。高速・低遅延などの特長を生かせるが、新しい設備に負荷が集中すると、その契約者だけが一斉につながりにくくなる。"},{"term":"交換機","aliases":[],"full":"","short":"通信や通話をつなぐ中枢設備","long":"携帯電話の通話やデータ通信を相手先へつなぐ、通信会社の中枢にある設備。多くの契約者を受け持つため、ここが混雑したり止まったりすると全国規模の障害になる。"},{"term":"輻輳","aliases":["ふくそう"],"full":"","short":"通信が集中して混雑すること","long":"通信や接続の要求が設備の処理能力を超えて集中し、つながりにくくなる状態。災害時や設備の不具合で起きやすく、通信会社は通信を絞って全面停止を防ぐ。"},{"term":"MVNO","aliases":["格安SIM"],"full":"Mobile Virtual Network Operator","short":"大手の回線を借りる携帯会社","long":"自前の基地局を持たず、ドコモなど大手の回線を借りて携帯サービスを提供する事業者。借りている大手の設備で障害が起きると、影響を受けることがある。"},{"term":"Cuenote FC","aliases":["Cuenote"],"full":"","short":"ユミルリンクのメール配信サービス","long":"ユミルリンクが企業向けに提供するメルマガなどの配信サービス。多くの企業の会員アドレスが集まるため、侵入されると利用企業の顧客情報までまとめて漏れる。"},{"term":"持株会","aliases":["従業員持株会"],"full":"","short":"社員が自社株を積み立てる制度","long":"社員が給与から少しずつ出し合い、自分の会社の株を共同で買う制度。証券会社が管理を受け持つことが多く、氏名や残高、口座情報がまとめて保管される。"},{"term":"攻撃コード","aliases":[],"full":"","short":"穴を実際に突くためのプログラム","long":"脆弱性を悪用するための具体的なプログラム。公開されると技術力の低い攻撃者でも同じ攻撃ができるため、修正版が出る前の公開は特に危険になる。"},{"term":"遠隔管理ツール","aliases":["RMM"],"full":"Remote Monitoring and Management","short":"多数のPCを遠くから管理する道具","long":"IT業者が顧客企業のPCやサーバーを遠隔で監視・更新・操作するためのソフト。全顧客の端末に強い権限を持つため、乗っ取られると被害が多数の企業へ一気に広がる。"},{"term":"N-central","aliases":[],"full":"","short":"N-ableの遠隔管理ツール","long":"米N-ableが提供する、IT業者向けの遠隔監視・管理ソフト。業者が顧客企業の端末をまとめて操作できるため、穴を突かれると顧客側まで侵入される恐れがある。"},{"term":"Hotfix","aliases":["ホットフィックス"],"full":"","short":"緊急に出す修正版","long":"定期の更新を待たずに、深刻な不具合や脆弱性をふさぐために急いで出す修正版。対象を絞って出すことが多く、残りの問題は後の修正で対応されることもある。"},{"term":"オンプレミス","aliases":["オンプレ"],"full":"On-premises","short":"自社で設置・運用する形態","long":"ソフトやサーバーを、クラウドではなく自社の設備に置いて運用する形態。更新も自社の責任になるため、修正版の適用が遅れると穴が開いたままになりやすい。"},{"term":"Gemini","aliases":["Google Gemini"],"full":"","short":"Googleの対話型AI","long":"Googleが開発する生成AIとそのアプリ。検索やGmail、カレンダーなどGoogleのサービスとつなげて使えるため、どの情報をAIに見せるかの設定が重要になる。"},{"term":"CarPlay","aliases":["Apple CarPlay"],"full":"","short":"iPhoneを車の画面で使う機能","long":"iPhoneを車につなぎ、地図や音楽、メッセージを車の画面と音声で操作できるAppleの機能。運転中に使うため、画面を注視せず声で操作できるアプリが中心になる。"},{"term":"Gemini Live","aliases":[],"full":"","short":"Geminiと声で会話する機能","long":"Geminiと音声で自然に会話できる機能。途中で割り込んだり話題を変えたりできる。メールや予定とつなぐと読み上げもできるため、周りに聞かれる場面での使い方に注意が要る。"}]</script>
+
+<section class="words">
+<h2>今日のキーワード</h2>
+<p><b>輻輳：</b>通信が一か所に集中して、設備がさばき切れずに混雑すること。今日はドコモの5G SAで、11/5に続いて同じ原因の障害が起きたと報じられました。新しい設備ほど負荷の偏りが出やすく、予備の回線を持っておくと安心です。</p>
+</section>
+
+<section class="src">
+<h2>出典</h2>
+<ul>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/11/2000003116/">ITmedia NEWS: 続くドコモ通信障害 一部除き復旧も、完全解消には至らず</a></li>
+<li><a href="https://www.itmedia.co.jp/mobile/spv/2611/11/news060.html">ITmedia Mobile: ドコモで再び通信障害が発生 5G SAに原因ありと判明</a></li>
+<li><a href="https://www.techno-edge.net/article/2026/11/11/5700.html">テクノエッジ: ドコモの5G SAでまた通信障害、11月11日10時34分から全国で</a></li>
+<li><a href="https://s-max.jp/archives/1802446.html">S-MAX: NTTドコモ、全国で5G SAの携帯電話サービスが利用しづらい状況に（復旧済み）</a></li>
+<li><a href="https://www.docomo.ne.jp/info/network/kanto/pages/261111_13_m.html">NTTドコモ 通信障害のお詫びと復旧のお知らせ（11/11）</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/11/2000003114/">ITmedia NEWS: メール配信のユミルリンク、不正アクセスで約4786万件漏えい</a></li>
+<li><a href="https://www.release.tdnet.info/inbs/140120261111572569.pdf">ユミルリンク 適時開示（11/11）</a></li>
+<li><a href="https://www.yasukuni.or.jp/news_detail.html?id=734">靖国神社 お知らせ（不正アクセスによる個人情報漏えい）</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/11/2000003119/">ITmedia NEWS: 靖国神社に不正アクセス 約1万4500件の個人情報漏えい</a></li>
+<li><a href="https://www.smbcnikko.co.jp/news/release/2026/pdf/261111_01.pdf">SMBC日興証券 当社持株会管理システムへの不正アクセスによる個人情報の漏えいについて</a></li>
+<li><a href="https://act1.co.jp/2026-11-11-03/">アクト: SMBC日興証券の持株会システムに不正アクセス 最大5.6万人</a></li>
+<li><a href="https://www.infosecurity-magazine.com/news/n-able-n-central-able2shell-0day/">Infosecurity Magazine: N-able Rushes Out N-central Fixes After 33 Zero-Days Go Public</a></li>
+<li><a href="https://runtimewire.com/article/n-able-takes-n-central-offline-33-alleged-zero-days">RuntimeWire: N-able takes N-central offline after 33 alleged zero-days are published</a></li>
+<li><a href="https://9to5google.com/2026/11/11/gemini-app-carplay/">9to5Google: Google rolling out Gemini app for CarPlay</a></li>
+<li><a href="https://www.macrumors.com/2026/11/11/google-gemini-apple-carplay/">MacRumors: Google Says Gemini App Rolling Out on Apple CarPlay Starting Today</a></li>
+</ul>
+</section>
