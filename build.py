@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the static site into _site/. (v9)
+"""Build the static site into _site/. (v10)
 Inputs: config.json, glossary.json, posts/YYYY-MM-DD.html (first line: <!--meta {json} -->), static/
 Optional: site_ids.json {"google_site_verification": "", "goatcounter": "", "show_counter": false}
 SITE_URL: env SITE_URL, else derived from GITHUB_REPOSITORY (owner/repo) -> https://owner.github.io/repo/
@@ -9,6 +9,10 @@ v8: top page = today's issue in full / archive page (last 90 days, missing weekd
     /latest/ redirect (fixed URL for QR & SNS) / 404 page that leads to today's issue /
     cache-busting ?v=hash on static assets / publish time 07:00 JST / recovered-issue badge /
     posts older than KEEP_DAYS are ignored (the VPS publish script deletes them).
+v10: issue page = cover (date + 3 lines with 1-line summaries + "3 lines OK / read all 5 min") /
+     kandoku card (完読！ + 朝刊スタンプ, cumulative titles 新人/記者/デスク/編集長/主筆, stamps in localStorage only) /
+     reading bar (bottom) / "this is an old issue -> latest" band / logo icon recolored by title /
+     web app manifest (home screen opens the top page) / /latest/ now redirects to the top page.
 v9: full-text search. search.json (one entry per topic, NFKC-normalized plain text) + /search/ page
     + static/search.js (substring AND match, works for Japanese without word splitting).
 """
@@ -25,6 +29,10 @@ ids = json.loads(_ids.read_text(encoding="utf-8-sig")) if _ids.exists() else {}
 GSV = (ids.get("google_site_verification") or "").strip()
 GC = (ids.get("goatcounter") or "").strip()
 SHOW_COUNTER = bool(ids.get("show_counter")) and bool(GC)
+# v10: official SNS (config.json "follow" overrides; empty string hides a button)
+FOLLOW = {"threads": "https://www.threads.com/@it_chokan", "bluesky": "", "x": ""} | (cfg.get("follow") or {})
+ICON_SRC = ROOT / "static" / "icon" / "source.png"   # square brand icon; rank variants are generated at build time
+HAS_ICON = False                                     # set by make_icons()
 
 JST = timezone(timedelta(hours=9))
 PUB_TIME = "T07:00:00+09:00"   # publish time of the daily post (JST)
@@ -233,6 +241,10 @@ def head(title, desc, url, rel, og_type="article", extra="", robots=""):
     gc = f'<script data-goatcounter="https://{esc(GC)}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>' if GC else ""
     rb = f'<meta name="robots" content="{robots}">' if robots else ""
     canon = f'<link rel="canonical" href="{url}">' if url else ""
+    icons = (f'<link rel="manifest" href="{BASE}manifest.webmanifest"><meta name="theme-color" content="#FDD446">'
+             + (f'<link rel="icon" type="image/png" href="{BASE}static/icon/icon-192.png"><link rel="apple-touch-icon" href="{BASE}static/icon/icon-192.png">' if HAS_ICON else ""))
+    logo = (f'<img class="logo-ic" id="logoic" src="{rel}static/icon/rank0.png" width="40" height="40" alt="">' if HAS_ICON
+            else '<span class="prompt">&gt;_</span>')
     return f"""<!doctype html>
 <html lang="ja"><head>
 <meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="{CSP}"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -249,9 +261,9 @@ def head(title, desc, url, rel, og_type="article", extra="", robots=""):
 <meta name="twitter:card" content="summary_large_image">{tw}{gsv}
 <link rel="alternate" type="application/rss+xml" title="{esc(cfg['site_title'])}" href="{BASE}feed.xml">
 {FONTS}
-<link rel="stylesheet" href="{asset(rel, 'style.css')}">{extra}{gc}
+<link rel="stylesheet" href="{asset(rel, 'style.css')}">{icons}{extra}{gc}
 </head><body><div class="wrap">
-<div class="mast"><a href="{rel}"><p class="logo"><span class="prompt">&gt;_</span>{esc(cfg['site_title'])}</p></a><span class="tag">// security × tech, every morning</span></div>
+<div class="mast"><a href="{rel}"><p class="logo">{logo}{esc(cfg['site_title'])}<span class="rank-chip" id="rankchip" hidden></span></p></a><span class="tag">// security × tech, every morning</span></div>
 <nav class="navlinks" aria-label="サイト内"><a href="{rel}">今日の朝刊</a><a href="{rel}archive/">バックナンバー</a><a href="{rel}search/">検索</a></nav>
 """
 
@@ -305,9 +317,90 @@ def recovered_note(p):
     when = f"（{esc(when)} 掲載）" if when else ""
     return f'<p class="recovered">この号は配信トラブルのため、遅れて掲載しました{when}。</p>\n'
 
-def render_issue(p, rel, url, gl_json, is_top=False, extra_head=""):
+# ---- v10: cover / kandoku card / reading bar ----
+def _txt(fragment):
+    t = re.sub(r"<script\b.*?</script>", "", fragment, flags=re.S)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", t)).strip()
+
+def first_sentence(article_html, limit=50):
+    m = re.search(r'<p class="what">(.*?)</p>', article_html, re.S)
+    if not m:
+        return ""
+    t = _txt(m.group(1))
+    cut = t.find("。")
+    t = t[:cut + 1] if cut >= 0 else t
+    return t if len(t) <= limit else t[:limit - 1] + "…"
+
+def read_minutes(body):
+    parts = re.findall(r'<p class="(?:what|ex|act)">(.*?)</p>|<ul class="leaks">(.*?)</ul>', body, re.S)
+    chars = sum(len(html.unescape(_txt(a or b))) for a, b in parts)
+    return max(1, min(9, -(-chars // 400)))
+
+def cover_html(p, body, items, rel, is_current, latest):
+    arts = {int(n): inner for n, inner in re.findall(r'<article class="topic" id="t(\d+)"[^>]*>(.*?)</article>', body, re.S)}
+    pools = {"sec": [n for n, c, _, _ in items if c == "cat-incident"], "tech": [n for n, c, _, _ in items if c == "cat-tech"]}
+    used, rows = set(), []
+    for i, (line, kind) in enumerate(title_lines(p["title"], p["slug"]), 1):
+        pool = [n for n in pools[kind] if n not in used] or [n for n, *_ in items if n not in used]
+        n = pool[0] if pool else None
+        if n: used.add(n)
+        sub = first_sentence(arts.get(n, "")) if n else ""
+        tech = '<span class="cv-tech">新技術</span>' if kind == "tech" else ""
+        rows.append(f'<a class="cv-row {kind}" href="#t{n or 1}"><span class="cv-no">{i}</span>'
+                     f'<span class="cv-tx"><span class="cv-h">{tech}{esc(line)}</span><span class="cv-s">{sub}</span></span></a>')
+    mins = read_minutes(body)
+    band = ""
+    if not is_current and latest:
+        band = (f'<a class="latest-band" href="{rel}">これは{jdate(p["date"])}号です。'
+                f'<b>最新号（{jdate(latest["date"])}）はこちら →</b></a>\n')
+    badge = "平日 毎朝7時の最新号" if is_current else "バックナンバー"
+    return band + f"""<section class="cover" aria-label="けさの3行">
+<p class="cv-badge">{badge}</p>
+<p class="cv-date">{jdate(p["date"]).replace("（", '<small>（').replace("）", "）</small>")}</p>
+<p class="cv-sub">けさの3行 <span>ここまで1分</span></p>
+<h1 class="cv-lines">{"".join(rows)}</h1>
+<div class="cv-cta"><a href="#kandoku" class="cv-quick">3行でOK<small>{"スタンプだけ押す" if is_current else "最後へ"}</small></a><a href="#t1" class="cv-all">{mins}分で全部読む<small>{len(items)}本・用語つき</small></a></div>
+</section>
+""", mins
+
+def kandoku_html(p, rel, is_current):
+    fl = [(k, lab) for k, lab in (("x", "X"), ("threads", "Threads"), ("bluesky", "Bluesky")) if FOLLOW.get(k)]
+    btns = "".join(f'<a href="{esc(FOLLOW[k])}" rel="noopener" target="_blank">{lab}</a>' for k, lab in fl)
+    btns += f'<a href="{BASE}feed.xml">RSS</a>'
+    head_t = "けさのIT、これで全部です。" if is_current else "この号は、これで全部です。"
+    note = "" if is_current else '<p class="kd-old">スタンプは最新号を完読すると押されます。</p>'
+    return f"""<section class="kandoku" id="kandoku" aria-label="完読">
+<p class="kd-stamp">完読！</p>
+<p class="kd-head">{head_t}</p>
+<p class="kd-next" id="kdnext">次号は 平日の朝7:00 に届きます</p>
+<div class="kd-card">
+<p class="kd-title">朝刊スタンプ <span id="kdcount"></span></p>
+<div class="kd-week" id="kdweek"></div>
+<p class="kd-rank" id="kdrank">最新号を完読すると、スタンプが押されます。</p>
+{note}<p class="kd-note">記録はこの端末のブラウザだけに保存されます。</p>
+</div>
+<p class="kd-follow-h">明日の朝刊も受け取る</p>
+<div class="kd-follow">{btns}</div>
+<p class="kd-bm">ブックマークは <a href="{BASE}">トップページ</a> へ。毎朝7時に最新号へ切り替わります。</p>
+<div class="kd-btns"><button type="button" id="kdshare" hidden>けさの3行をシェア</button>
+<details class="kd-home"><summary>ホーム画面に追加</summary><p>iPhone（Safari）: 共有ボタン → 「ホーム画面に追加」<br>Android（Chrome）: 右上の︙ → 「ホーム画面に追加」<br>追加したアイコンからは、いつでも最新号が開きます。</p></details></div>
+<p class="kd-msg" id="kdmsg" aria-live="polite"></p>
+</section>
+"""
+
+def issue_data(p, rel, is_current, mins, issue_dates):
+    d = {"date": p["date"], "current": is_current, "min": mins, "issues": issue_dates,
+         "top": BASE, "icon": f"{rel}static/icon/" if HAS_ICON else "",
+         "url": f"{BASE}posts/{p['slug']}.html",
+         "share": "けさのIT朝刊（" + jdate(p["date"]) + "）\n" + "\n".join(f"{i}. {t}" for i, (t, _) in enumerate(title_lines(p["title"]), 1))}
+    return '<script type="application/json" id="issue-data">' + json.dumps(d, ensure_ascii=False).replace("<", "\\u003c") + "</script>"
+
+RBAR = """<div class="rbar" id="rbar" hidden><div class="rb-l"><span class="rb-track"><i id="rbfill"></i></span><span id="rbtext"></span></div><a class="rb-btn" id="rbbtn" href="#kandoku">フォロー</a></div>"""
+
+def render_issue(p, rel, url, gl_json, is_top=False, extra_head="", latest=None, issue_dates=()):
     """Full issue page. Used for posts/YYYY-MM-DD.html and for the top page."""
     toc, tabs, body, items = enhance_body(p["body"], p["slug"])
+    is_current = bool(latest) and latest["date"] == p["date"]
     pub = p.get("published_jst") or (p["date"] + PUB_TIME)
     ld = jsonld({
         "@context": "https://schema.org", "@type": "NewsArticle",
@@ -327,21 +420,21 @@ def render_issue(p, rel, url, gl_json, is_top=False, extra_head=""):
     if is_top:
         page = head(f"{cfg['site_title']}｜{title_plain(p['title'])}", p["summary"], url, rel, "website",
                     extra=extra_head + ld + meta_date)
-        page += f'<p class="issue-date"><span class="d">{jdate(p["date"])}</span>の朝刊</p>\n'
     else:
         page = head(f"{title_plain(p['title'])}｜{cfg['site_title']} {p['date']}", p["summary"], url, rel,
                     extra=ld + meta_date)
-        page += f'<span class="date">{esc(p["date"])}</span>\n'
+    cover, mins = cover_html(p, body, items, rel, is_current, latest)
     page += recovered_note(p)
-    page += f'<h1 class="title">{title_html(p["title"], p["slug"])}</h1>\n'
+    page += cover
     page += counter_html(rel)
     page += toc + tabs
     page += f'<div id="article">{body}</div>\n'
     page += '<section class="gl"><h2>この記事の用語</h2><ul id="gllist"></ul></section>\n'
-    if is_top:
-        page += f'<p class="more-issues"><a href="{rel}archive/">過去の朝刊を見る（{KEEP_DAYS}日分）</a></p>\n'
-    tail = (f'</div>{SHEET}<script type="application/json" id="glossary-data">{gl_json}</script>'
-            f'<script src="{asset(rel, "glossary.js")}"></script><script src="{asset(rel, "nav.js")}"></script>'
+    page += kandoku_html(p, rel, is_current)
+    page += f'<p class="more-issues"><a href="{rel}archive/">過去の朝刊を見る（{KEEP_DAYS}日分）</a></p>\n'
+    tail = (f'</div>{SHEET}{RBAR}<script type="application/json" id="glossary-data">{gl_json}</script>'
+            + issue_data(p, rel, is_current, mins, issue_dates) +
+            f'<script src="{asset(rel, "glossary.js")}"></script><script src="{asset(rel, "nav.js")}"></script><script src="{asset(rel, "stamp.js")}"></script>'
             '<a href="#" class="totop" id="totop" hidden aria-label="上へ戻る">▲</a></body>')
     page += foot(rel).replace("</div></body>", tail)
     return page
@@ -418,6 +511,143 @@ ABOUT_BODY = f"""<h1 class="title"><span class="line sec">このサイトにつ�
 </div>
 """
 
+STAMP_JS = r'''(()=>{
+const D=document.getElementById('issue-data');if(!D)return;
+let I;try{I=JSON.parse(D.textContent)}catch(e){return}
+const KEY='itc_stamps_v1';
+const load=()=>{try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)):[]}catch(e){return []}};
+const save=a=>{try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}};
+const RANKS=[[0,'新人','rank0'],[10,'記者','rank1'],[20,'デスク','rank2'],[120,'編集長','rank3'],[240,'主筆','rank4']];
+const rankOf=n=>{let i=0;RANKS.forEach((r,k)=>{if(n>=r[0])i=k});return [RANKS[i],RANKS[i+1]||null]};
+const iso=d=>d.toISOString().slice(0,10);
+const today=iso(new Date(Date.now()+9*3600e3));
+const add=(s,k)=>{const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+k);return iso(d)};
+const wd=s=>new Date(s+'T00:00:00Z').getUTCDay();
+const issues=new Set(I.issues||[]);
+let st=load();
+const $=id=>document.getElementById(id);
+function paintLogo(){
+  const n=st.length,r=rankOf(n)[0];
+  const img=$('logoic');if(img&&I.icon){img.src=I.icon+r[2]+'.png';img.alt='称号: '+r[1]}
+  const c=$('rankchip');if(c&&n>0){c.textContent=r[1];c.className='rank-chip '+r[2];c.hidden=false}
+}
+function paintCard(pop){
+  const w=$('kdweek');if(!w)return;
+  const mon=add(today,-((wd(today)+6)%7));let h='';
+  for(let i=0;i<5;i++){
+    const d=add(mon,i);let cls='fut',t='';
+    if(st.includes(d)){cls='done';t='読了'}
+    else if(d===I.date&&I.current){cls='now';t='今日'}
+    else if(d<today&&issues.has(d)){cls='miss';t='－'}
+    else if(d<today||(d===today&&!issues.has(d)&&!I.current)){cls='off';t='休'}
+    h+='<div class="kd-day"><span class="kd-wd">'+'月火水木金'[i]+'</span><span class="kd-st '+cls+(pop===d?' pop':'')+'">'+t+'</span></div>';
+  }
+  w.innerHTML=h;
+  const n=st.length,[r,nx]=rankOf(n);
+  $('kdcount').textContent='通算 '+n+'号';
+  if(n>0)$('kdrank').innerHTML='称号：<b class="rk '+r[2]+'">'+r[1]+'</b>'+(nx?'　'+nx[1]+'まで あと'+(nx[0]-n)+'号':'　最高位です');
+}
+function nextText(){
+  let d=add(I.date,1);while(wd(d)===0||wd(d)===6)d=add(d,1);
+  return (d===add(today,1)?'明日':d===today?'今日':'月火水木金土日'[(wd(d)+6)%7]+'曜')+' 7:00';
+}
+const nx=$('kdnext');if(nx&&I.current)nx.textContent='次号は '+nextText()+' に届きます';
+function stamp(){
+  if(!I.current||st.includes(I.date))return;
+  const before=rankOf(st.length)[0];
+  st=load();if(!st.includes(I.date))st.push(I.date);st.sort();save(st);
+  const after=rankOf(st.length)[0];
+  paintCard(I.date);paintLogo();
+  if(after!==before&&st.length>0){const m=$('kdmsg');if(m)m.textContent='昇進！ 称号「'+after[1]+'」になりました'}
+  bar();
+}
+const k=$('kandoku');let kv=false;
+if(k&&'IntersectionObserver'in window){
+  new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){stamp();kv=true}else kv=false;bar()}),{threshold:.3}).observe(k);
+}
+const rb=$('rbar'),fill=$('rbfill'),txt=$('rbtext'),btn=$('rbbtn');
+if(btn&&!I.current){btn.textContent='最新号へ';btn.href=I.top}
+function bar(){
+  if(!rb||!k)return;
+  const total=Math.max(1,k.offsetTop-innerHeight*.5),p=Math.min(1,Math.max(0,scrollY/total));
+  fill.style.width=(p*100).toFixed(1)+'%';
+  const rem=Math.ceil(I.min*(1-p));
+  txt.textContent=(I.current&&st.includes(I.date))?'完読済み ✓ 次号は '+nextText():rem>0?'完読まで あと約'+rem+'分':'もうすぐ完読';
+  const show=scrollY>320&&!kv;
+  if(rb.hidden===show){rb.hidden=!show;document.body.classList.toggle('has-rbar',show)}
+}
+addEventListener('scroll',bar,{passive:true});addEventListener('resize',bar);
+const sb=$('kdshare');
+if(sb){sb.hidden=false;sb.addEventListener('click',async()=>{
+  const m=$('kdmsg');
+  try{if(navigator.share){await navigator.share({title:'IT朝刊',text:I.share,url:I.url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(I.share+'\n'+I.url);if(m)m.textContent='リンクをコピーしました'}catch(e){if(m)m.textContent=I.url}
+})}
+paintLogo();paintCard();bar();
+})();
+'''
+
+# rank colors: (background, dots[, burst]) replacing the yellow (and red) of the brand icon
+RANK_COLORS = {1: ((122, 190, 255), (84, 160, 240)), 2: ((216, 222, 230), (186, 194, 206)),
+               3: ((235, 170, 35), (205, 135, 15)), 4: ((255, 59, 48), (214, 38, 30), (255, 210, 63))}
+
+def make_icons():
+    """static/icon/source.png -> _site/static/icon/rank0..4.png (96px, round) + icon-192.png. Needs Pillow; skips if missing."""
+    global HAS_ICON
+    if not ICON_SRC.exists():
+        print("INFO icons: static/icon/source.png not found, text logo is used")
+        return
+    try:
+        import colorsys
+        from PIL import Image, ImageDraw
+    except Exception as e:
+        print(f"WARN icons skipped (Pillow not available): {e}")
+        return
+    out = OUT / "static" / "icon"
+    out.mkdir(parents=True, exist_ok=True)
+    src = Image.open(ICON_SRC).convert("RGB")
+    if src.width > 400:
+        src = src.resize((384, 384), Image.LANCZOS)
+    W, H = src.size
+    k = W / 1080
+    px = list(src.get_flattened_data() if hasattr(src, "get_flattened_data") else src.getdata())
+    info = []
+    for i, (r, g, b) in enumerate(px):
+        h, sat, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        x, y = i % W, i // W
+        label = 340 * k < x < 710 * k and 780 * k < y < 945 * k
+        kind = "y" if (28 < h * 360 < 62 and sat > .45 and not label) else "r" if ((h * 360 < 14 or h * 360 > 340) and sat > .5) else ""
+        info.append((kind, min(1, max(0, (g - 188) / 22)), v))
+    def variant(cols):
+        if not cols:
+            return src
+        bg, dot = cols[0], cols[1]
+        red = cols[2] if len(cols) > 2 else None
+        new = []
+        for (r, g, b), (kind, t, v) in zip(px, info):
+            if kind == "y":
+                new.append(tuple(int((dot[c] * (1 - t) + bg[c] * t) * v) for c in range(3)))
+            elif kind == "r" and red:
+                new.append(tuple(int(red[c] * v) for c in range(3)))
+            else:
+                new.append((r, g, b))
+        im = Image.new("RGB", (W, H)); im.putdata(new)
+        return im
+    for n in range(5):
+        im = variant(RANK_COLORS.get(n)).resize((384, 384), Image.LANCZOS).convert("RGBA")
+        m = Image.new("L", (384, 384), 0); ImageDraw.Draw(m).ellipse([2, 2, 381, 381], fill=255)
+        im.putalpha(m)
+        im.resize((96, 96), Image.LANCZOS).quantize(64, method=Image.Quantize.FASTOCTREE).save(out / f"rank{n}.png", optimize=True)
+    src.resize((192, 192), Image.LANCZOS).quantize(64).save(out / "icon-192.png", optimize=True)
+    HAS_ICON = True
+    print("icons: rank0-4 + icon-192 generated")
+
+def manifest():
+    icons = ([{"src": f"{BASE}static/icon/icon-192.png", "sizes": "192x192", "type": "image/png"}] if HAS_ICON else [])
+    return json.dumps({"name": cfg["site_title"], "short_name": cfg["site_title"], "start_url": BASE, "scope": BASE,
+                       "display": "standalone", "background_color": "#eaf7ff", "theme_color": "#FDD446",
+                       "lang": "ja", "icons": icons}, ensure_ascii=False)
+
 def build():
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -426,23 +656,27 @@ def build():
     shutil.copy(ROOT / "glossary.json", OUT / "glossary.json")
     if SHOW_COUNTER:
         (OUT / "static" / "counter.js").write_text(COUNTER_JS % GC, encoding="utf-8")
+    (OUT / "static" / "stamp.js").write_text(STAMP_JS, encoding="utf-8")
+    make_icons()
+    (OUT / "manifest.webmanifest").write_text(manifest(), encoding="utf-8")
     for f in (OUT / "static").iterdir():
         if f.is_file() and f.suffix in (".css", ".js"):
             VER[f.name] = hashlib.sha1(f.read_bytes()).hexdigest()[:8]
     gl_json = json.dumps(glossary, ensure_ascii=False).replace("</", "<\\/")
     posts = load_posts()
     latest = posts[0] if posts else None
+    issue_dates = sorted(p["date"] for p in posts)
 
     # issues
     for p in posts:
         url = f"{BASE}posts/{p['slug']}.html"
-        (OUT / "posts" / f"{p['slug']}.html").write_text(render_issue(p, "../", url, gl_json), encoding="utf-8")
+        (OUT / "posts" / f"{p['slug']}.html").write_text(render_issue(p, "../", url, gl_json, latest=latest, issue_dates=issue_dates), encoding="utf-8")
 
     # top = latest issue in full
     site_ld = jsonld({"@context": "https://schema.org", "@type": "WebSite", "name": cfg["site_title"], "url": BASE,
                       "inLanguage": "ja", "description": cfg["site_description"]})
     if latest:
-        page = render_issue(latest, "", BASE, gl_json, is_top=True, extra_head=site_ld)
+        page = render_issue(latest, "", BASE, gl_json, is_top=True, extra_head=site_ld, latest=latest, issue_dates=issue_dates)
     else:
         page = head(cfg["site_title"], cfg["site_description"], BASE, "", "website", extra=site_ld)
         page += f'<p class="lead">{esc(cfg["site_description"])}</p><p>最初の朝刊を準備中です。</p>\n' + foot("")
@@ -467,9 +701,9 @@ def build():
     (OUT / "archive").mkdir()
     (OUT / "archive" / "index.html").write_text(page, encoding="utf-8")
 
-    # /latest/ : fixed URL for QR codes and SNS profiles
+    # /latest/ : kept for links already shared (Threads profile). v10: goes to the top page (= latest issue)
     (OUT / "latest").mkdir()
-    target = f"../posts/{latest['slug']}.html" if latest else "../"
+    target = "../"
     (OUT / "latest" / "index.html").write_text(
         f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex">'
         f'<meta http-equiv="refresh" content="0; url={target}"><link rel="canonical" href="{BASE}">'
