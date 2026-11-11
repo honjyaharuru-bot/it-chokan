@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the static site into _site/. (v8)
+"""Build the static site into _site/. (v9)
 Inputs: config.json, glossary.json, posts/YYYY-MM-DD.html (first line: <!--meta {json} -->), static/
 Optional: site_ids.json {"google_site_verification": "", "goatcounter": "", "show_counter": false}
 SITE_URL: env SITE_URL, else derived from GITHUB_REPOSITORY (owner/repo) -> https://owner.github.io/repo/
@@ -9,6 +9,8 @@ v8: top page = today's issue in full / archive page (last 90 days, missing weekd
     /latest/ redirect (fixed URL for QR & SNS) / 404 page that leads to today's issue /
     cache-busting ?v=hash on static assets / publish time 07:00 JST / recovered-issue badge /
     posts older than KEEP_DAYS are ignored (the VPS publish script deletes them).
+v9: full-text search. search.json (one entry per topic, NFKC-normalized plain text) + /search/ page
+    + static/search.js (substring AND match, works for Japanese without word splitting).
 """
 import json, os, re, shutil, html, pathlib, unicodedata, hashlib
 from datetime import datetime, date, timedelta, timezone
@@ -250,7 +252,7 @@ def head(title, desc, url, rel, og_type="article", extra="", robots=""):
 <link rel="stylesheet" href="{asset(rel, 'style.css')}">{extra}{gc}
 </head><body><div class="wrap">
 <div class="mast"><a href="{rel}"><p class="logo"><span class="prompt">&gt;_</span>{esc(cfg['site_title'])}</p></a><span class="tag">// security × tech, every morning</span></div>
-<nav class="navlinks" aria-label="サイト内"><a href="{rel}">今日の朝刊</a><a href="{rel}archive/">バックナンバー</a></nav>
+<nav class="navlinks" aria-label="サイト内"><a href="{rel}">今日の朝刊</a><a href="{rel}archive/">バックナンバー</a><a href="{rel}search/">検索</a></nav>
 """
 
 def foot(rel):
@@ -361,6 +363,40 @@ def archive_rows(posts):
         d -= timedelta(days=1)
     return rows
 
+# ---- v9: full-text search ----
+def _plain(fragment):
+    t = re.sub(r"<script\b.*?</script>", " ", fragment, flags=re.S)
+    t = re.sub(r"</(p|li|dd|dt|h3|ul|dl)>", " ", t)
+    t = re.sub(r"<[^>]+>", "", t)
+    t = html.unescape(t)
+    t = unicodedata.normalize("NFKC", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+def search_entries(p):
+    """One entry per topic. Ids t1..tN follow the same order as enhance_body()."""
+    out = []
+    arts = re.findall(r'<article class="topic"([^>]*)>(.*?)</article>', p["body"], re.S)
+    for n, (attrs, inner) in enumerate(arts, 1):
+        h3 = re.search(r"<h3>(.*?)</h3>", inner, re.S)
+        h = _plain(h3.group(1)) if h3 else f"topic {n}"
+        body = inner[h3.end():] if h3 else inner
+        tag = (re.search(r'data-tag="([^"]*)"', attrs) or [None, ""])[1]
+        out.append({"d": p["date"], "u": f"posts/{p['slug']}.html#t{n}", "h": h, "g": tag, "x": _plain(body)})
+    w = re.search(r'<section class="words">(.*?)</section>', p["body"], re.S)
+    if w:
+        out.append({"d": p["date"], "u": f"posts/{p['slug']}.html", "h": "今日のキーワード", "g": "", "x": _plain(re.sub(r"<h2>.*?</h2>", "", w.group(1), flags=re.S))})
+    return out
+
+SEARCH_BODY = f"""<h1 class="title"><span class="line sec">記事を検索</span></h1>
+<div class="search">
+<label for="q" class="sr">検索語</label>
+<input id="q" type="search" placeholder="例: Chrome、ニトリ、CVE-2026、漏えい" autocomplete="off" enterkeyhint="search">
+<p class="hint">過去{KEEP_DAYS}日分の記事から探します。スペースで区切ると、すべての語を含む記事に絞り込みます。</p>
+<p class="count" id="count" aria-live="polite"></p>
+<ol class="results" id="results"></ol>
+</div>
+"""
+
 ABOUT_BODY = f"""<h1 class="title"><span class="line sec">このサイトについて</span></h1>
 <div id="article">
 <section class="about">
@@ -450,6 +486,14 @@ def build():
     page += f'<p><a href="{BASE}archive/">バックナンバーを見る</a></p></section>\n' + foot(BASE)
     (OUT / "404.html").write_text(page, encoding="utf-8")
 
+    # search (v9)
+    entries = [e for p in posts for e in search_entries(p)]
+    (OUT / "search.json").write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (OUT / "search").mkdir()
+    page = head(f"記事を検索｜{cfg['site_title']}", f"{cfg['site_title']}の過去{KEEP_DAYS}日分の記事を全文検索。", f"{BASE}search/", "../", "website")
+    page += SEARCH_BODY + f'<script src="{asset("../", "search.js")}"></script>\n' + foot("../")
+    (OUT / "search" / "index.html").write_text(page, encoding="utf-8")
+
     # about
     page = head(f"このサイトについて｜{cfg['site_title']}", "IT朝刊の記事の選び方、事実確認と出典の方針。", f"{BASE}about.html", "", "website")
     page += ABOUT_BODY + foot("")
@@ -465,7 +509,7 @@ def build():
 
     # sitemap + robots
     ld = latest["date"] if latest else ""
-    urls = [(BASE, ld), (f"{BASE}archive/", ld), (f"{BASE}about.html", "")] + [(f"{BASE}posts/{p['slug']}.html", p["date"]) for p in posts]
+    urls = [(BASE, ld), (f"{BASE}archive/", ld), (f"{BASE}search/", ld), (f"{BASE}about.html", "")] + [(f"{BASE}posts/{p['slug']}.html", p["date"]) for p in posts]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for u, d in urls:
         sm += f"<url><loc>{u}</loc>" + (f"<lastmod>{d}</lastmod>" if d else "") + "</url>\n"
@@ -474,6 +518,7 @@ def build():
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /latest/\nSitemap: {BASE}sitemap.xml\n", encoding="utf-8")
     (OUT / ".nojekyll").write_text("")
     closed = sum(1 for _, p in rows if p is None)
+    print(f"search: {len(entries)} entries, {(OUT / 'search.json').stat().st_size} bytes")
     print(f"built {len(posts)} posts, {closed} closed days -> {OUT} (base {BASE}) latest={ld or '-'} "
           f"gsv={'on' if GSV else 'off'} goatcounter={'on' if GC else 'off'} counter={'on' if SHOW_COUNTER else 'off'}")
 
