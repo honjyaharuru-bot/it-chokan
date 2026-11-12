@@ -1,0 +1,105 @@
+<!--meta {"date":"2026-11-13","title":"N-centralの穴が悪用開始／無印109万件など漏えい3件／T:AWSを手元で無料再現","summary":"N-centralの穴が悪用開始、最新の修正版の機器も侵害。漏えいは無印の109万件など3件。Apacheに重大な穴。AWSを手元で無料再現。","window":"11/12 05:30 〜 11/13 05:30 JST"} -->
+<h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="high" data-tag="続報" data-short="【続報】N-centralが悪用">
+<header><span class="sev">ヤバい</span><h3>【続報】N-centralの新たな穴、公開から数時間で悪用。最新の修正版も破られる</h3></header>
+<p class="what">前号でお伝えしたIT業者向けの遠隔管理ツール<span class="pn">N-central</span>で、新たな穴が11/12に公開され、数時間後に悪用が始まりました。最新の修正版の機器も含め、少なくとも21台が侵害されています。</p>
+<p class="what">新しい穴4EverAble2Shellは、古い連携機能Legacy APIが有効だと、ログインなしで最上位の管理者権限rootを奪えます。開発元の<span class="pn">N-able</span>は修正版を準備中です。</p>
+<p class="ex"><b>たとえると</b>合鍵庫を修理した翌日に、別の入口からこじ開けられた状態です。</p>
+<dl class="facts">
+<dt>新しい穴</dt><dd>4EverAble2Shell（CVE-2026-90436＋権限昇格の穴）、端末側を狙うAgent2Shell</dd>
+<dt>被害</dt><dd>少なくとも21台（うち19台はHotfix 2適用済み）。攻撃は11/12 18時ごろ（日本時間）から</dd>
+<dt>直った版</dt><dd><b>未公開</b>（N-ableが準備中）</dd>
+<dt>侵害の目印</dt><dd>見覚えのないサービス xvd.service、/tmp/.xvd や /var/tmp/.xvd のファイル</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: IT業者にPC管理を任せている会社は業者に確認。管理者: Legacy APIの無効を確かめ、自社に置くオンプレミス版は止めて侵害の目印を探す。</p>
+</article>
+
+<article class="topic" data-sev="mid" data-tag="漏洩" data-short="漏えいまとめ 3件">
+<header><span class="sev">注意</span><h3>個人情報の漏えい公表まとめ（3件）</h3></header>
+<p class="what">今日の漏えい公表は3件です。最大は<span class="pn">無印良品</span>で、カード番号の全桁など約109万件を暗号化せずに残していたと11/12の会見で説明しました。無印と宝くじ公式サイトでは、よそで漏れたパスワードを試すリスト型攻撃も疑われています。</p>
+<ul class="leaks">
+<li><b>【続報】無印良品（良品計画、MUJI Card）</b><span class="n">約109万件</span>2021年7月までの会員のカード番号全桁・生年月日など（有効なカードは約34.5万件）。使わなくなった番号を消さず、伏せ字も暗号化もせず保存</li>
+<li><b>宝くじ公式サイト（都道府県・指定都市が発売元、11/11公表）</b><span class="n">件数非公表</span>氏名・住所、当落履歴、当せん金の受取口座（名義と番号の上4桁）を見られた恐れ。リスト型攻撃の可能性</li>
+<li><b>サイバーセキュリティクラウド（企業向けWebセキュリティ）</b><span class="n">調査中</span>一部顧客の企業名・氏名・メールアドレス、サービスの通信関連情報。社員の開発用GitHubの認証情報1件が流出し、第三者のアクセスを確認</li>
+</ul>
+<p class="ex"><b>たとえると</b>合鍵を使い回し先で試されたうえ、もう使わない古い控えまで金庫に入れっぱなしだった状態です。</p>
+<p class="act"><b>やること</b>利用者: MUJI Cardの再発行を検討し、宝くじサイトと同じパスワードを他でも使っていれば変更。管理者: 使わなくなった個人情報が残っていないか棚卸しし、開発用の認証情報は期限付きに。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="Brotliの穴、更新を">
+<header><span class="sev">ヤバい</span><h3>データ圧縮Brotliの穴「HTTP2Shell」、悪用確認済み。Node.jsやPythonも対象</h3></header>
+<p class="what">Googleのデータ圧縮方式<span class="pn">Brotli</span>の穴「HTTP2Shell」について、国内の脆弱性情報サイトJVNが11/12に情報を更新しました。10月から悪用が確認されている穴で、多くのWebサーバーやアプリが部品として使っています。</p>
+<p class="what">細工した圧縮データを送られるだけで乗っ取られる恐れがあります。サーバー用の実行環境<span class="pn">Node.js</span>や、プログラミング言語<span class="pn">Python</span>の部品も対象です。</p>
+<p class="ex"><b>たとえると</b>荷ほどき係が箱の大きさを確かめずに中身を広げ、隣の棚の書類まで上書きしてしまう状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-111497（CVSS 9.8、EPSS 82.6%）</dd>
+<dt>直った版</dt><dd><b>Brotli 1.0.10 / 1.1.1 / 1.2.1、Node.js 22.23.4 / 24.22.1 / 26.12.1、Python brotli 1.2.1</b></dd>
+<dt>KEV</dt><dd>10/27に掲載済み</dd>
+</dl>
+<p class="act"><b>やること</b>管理者: Node.jsやPython、コンテナの中のBrotliの版を洗い出して更新。再起動だけでは古い部品が残るため、作り直して入れ替える。</p>
+</article>
+
+<article class="topic" data-sev="high" data-tag="広域" data-short="Apacheに重大な穴">
+<header><span class="sev">ヤバい</span><h3>Webサーバーの定番Apacheに、ログインなしで乗っ取れる穴。2.4.71で修正</h3></header>
+<p class="what">Webサーバーソフトの定番<span class="pn">Apache HTTP Server</span>（Apache）に、ログインなしで乗っ取られる重大な穴が見つかり、11/11に修正版2.4.71が出ました。高速な通信方式HTTP/2を有効にしたサーバーが対象です。</p>
+<p class="what">実際の悪用はまだ報告されていません。ただ、米<span class="pn">Red Hat</span>は確実に動く攻撃手法が研究で示されたとしています。</p>
+<p class="ex"><b>たとえると</b>高速レーンを開けている料金所だけ、ゲートを素通りできる抜け道が見つかった状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-119618（CVSS 9.8、Red Hatの評価）</dd>
+<dt>対象</dt><dd>2.4.55〜2.4.70でHTTP/2を有効にしている場合</dd>
+<dt>直った版</dt><dd><b>Apache HTTP Server 2.4.71</b>（RHELなどは各社の修正パッケージ。Debianの一部は未修正）</dd>
+<dt>回避策</dt><dd>設定でHTTP/2を無効にし、HTTP/1.1だけにする</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 自分でサーバーを運用していなければ対応不要。管理者: 2.4.71か各Linuxの修正版へ更新。すぐ無理なら、すべての仮想ホストでHTTP/2を止める。</p>
+</article>
+
+<article class="topic" data-sev="low" data-tag="日本" data-short="Airターミナル6に穴">
+<header><span class="sev">注目</span><h3>ソフトバンクのホームルーター「Airターミナル6」に穴、修正は自動適用済み</h3></header>
+<p class="what"><span class="pn">ソフトバンク</span>の置くだけWi-Fiのホームルーター<span class="pn">Airターミナル6</span>に、機器の命令を勝手に実行される穴が公表されました。修正版はすでに自動で当たっており、利用者がすることは基本ありません。</p>
+<p class="what">悪用には管理画面へのログインが必要です。ソフトバンクは9月に機器を動かす内蔵ソフト（ファームウェア）の修正版を出し、自動で適用しています。</p>
+<p class="ex"><b>たとえると</b>玄関の鍵を持つ人なら配電盤まで勝手にいじれる欠陥が、業者の巡回で知らないうちに直っていた状態です。</p>
+<dl class="facts">
+<dt>CVE</dt><dd>CVE-2026-101107（CVSS 3.0で8.0、4.0で8.6）</dd>
+<dt>対象</dt><dd>ファームウェア v1.01.80以前</dd>
+<dt>修正</dt><dd>2026年9月公開の版を自動適用（未接続の機器はつないだ時に適用）</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: 管理画面のパスワードを初期設定のままにしない。管理者: 事業所で使う機器があれば、管理画面でファームウェアの版を確認。</p>
+</article>
+
+<h2 class="part" id="cat-tech"><span>#</span>新技術</h2>
+
+<article class="topic" data-sev="low" data-tag="世界" data-short="AWSを手元で無料再現">
+<header><span class="sev">注目</span><h3>Amazon、AWSを手元で再現する「AWS Emulator」を無料公開。コードはすべてAIが記述</h3></header>
+<p class="what"><span class="pn">Amazon</span>のクラウド<span class="pn">AWS</span>が、AWSの機能を手元のPCで無料で再現できる<span class="pn">AWS Emulator</span>を公開しました。AWSのアカウントがなくても、アプリの動作を試せます。</p>
+<p class="what">AWSを操作する命令の受け口（API）をまねて作られ、数百のサービスに対応します。権限の判定は本物と違うため、セキュリティの試験には向きません。コードはすべてAIエージェントが書き、人の目では確認していないとしています。</p>
+<p class="ex"><b>たとえると</b>本番の舞台を借りなくても、そっくりのセットで通し稽古ができるイメージです。</p>
+<p class="act"><b>やること</b>利用者: AWSで開発している人は、課金を気にせずテストに使える。管理者: 本物とずれる部分があるので、最終確認は本物のAWSで行うルールに。</p>
+</article>
+
+<script type="application/json" id="post-terms">[{"term": "遠隔管理ツール", "aliases": ["RMM"], "full": "Remote Monitoring and Management", "short": "多数のPCを遠くから管理する道具", "long": "IT業者が顧客企業のPCやサーバーを遠隔で監視・更新・操作するソフト。全顧客の端末に強い権限を持つため、乗っ取られると被害が多数の企業へ一気に広がる。"}, {"term": "N-central", "aliases": [], "full": "", "short": "N-ableの遠隔管理ツール", "long": "米N-ableが提供するIT業者向けの遠隔監視・管理ソフト。業者が顧客企業の端末をまとめて操作できるため、穴を突かれると顧客側まで侵入される恐れがある。"}, {"term": "4EverAble2Shell", "aliases": [], "full": "", "short": "N-centralの新たな乗っ取りの穴", "long": "N-centralの古い連携機能を入口に、ログインなしで最上位の権限を奪える攻撃手順の通称。公開から数時間で悪用され、最新の修正版の機器も被害を受けた。"}, {"term": "Agent2Shell", "aliases": [], "full": "", "short": "N-centralの端末側を狙う穴", "long": "N-centralが顧客のPCに入れる常駐ソフトを狙い、Windowsを最上位の権限で操作できるとされる穴の通称。管理される側のPCまで被害が広がる恐れがある。"}, {"term": "Legacy API", "aliases": [], "full": "", "short": "N-centralの古い連携機能", "long": "N-centralで外部の仕組みとつなぐための古い窓口。今は初期状態で無効だが、有効にしたままだと今回の攻撃の入口になるため、設定の確認が必要。"}, {"term": "Hotfix", "aliases": ["ホットフィックス"], "full": "", "short": "緊急に出す修正版", "long": "定期の更新を待たずに、深刻な不具合や脆弱性をふさぐため急いで出す修正版。対象を絞ることが多く、別の穴が後から見つかると再び破られることもある。"}, {"term": "オンプレミス", "aliases": ["オンプレ"], "full": "On-premises", "short": "自社で設置・運用する形態", "long": "ソフトやサーバーをクラウドではなく自社の設備に置いて運用する形態。更新も自社の責任になるため、修正版の適用が遅れると穴が開いたままになりやすい。"}, {"term": "暗号化", "aliases": [], "full": "", "short": "鍵がないと読めない形に変換", "long": "データを鍵がないと読めない形に変えること。暗号化せずに保存したデータは、盗まれればそのまま読まれるため、カード番号などの重要な情報は暗号化が基本。"}, {"term": "MUJI Card", "aliases": [], "full": "", "short": "無印良品のクレジットカード", "long": "良品計画が発行する提携クレジットカード。かつてはカード番号で会員を識別していたため、その番号が不要になった後も社内システムに残り、今回の漏えいにつながった。"}, {"term": "GitHub", "aliases": [], "full": "", "short": "プログラムの保管・共有サービス", "long": "世界中の開発者がプログラムのコードを保管・共有するサービス。ログイン用の認証情報が漏れると、保管されたコードや設定に含まれる情報まで第三者に見られる恐れがある。"}, {"term": "Brotli", "aliases": [], "full": "", "short": "Google製のデータ圧縮方式", "long": "Googleが開発したデータ圧縮の方式とその部品。Webの通信を軽くするため多くのサーバーやアプリに組み込まれており、穴があると影響が非常に広く及ぶ。"}, {"term": "HTTP2Shell", "aliases": ["Node2Shell", "Broccoli2Shell"], "full": "", "short": "Brotliの乗っ取りの穴の通称", "long": "Brotliの展開処理にある境界外書き込みの脆弱性（CVE-2026-111497）の通称。細工したデータを送るだけで乗っ取りにつながる恐れがあり、KEVにも掲載された。"}, {"term": "Node.js", "aliases": ["Node"], "full": "", "short": "サーバー用JS実行環境", "long": "Webサーバーや業務アプリで広く使われるJavaScriptの実行環境。部品としてBrotliを内蔵しているため、版が古いと今回の穴の影響を受ける。"}, {"term": "Python", "aliases": [], "full": "", "short": "人気のプログラミング言語", "long": "AIやデータ分析、Webアプリなどで広く使われるプログラミング言語。追加部品を入れて使うことが多く、部品に穴があると、その部品を使うアプリが影響を受ける。"}, {"term": "Apache HTTP Server", "aliases": ["Apache", "Apache httpd"], "full": "", "short": "定番のWebサーバーソフト", "long": "世界中のWebサイトで長く使われているオープンソースのWebサーバーソフト。利用数が非常に多いため、ログインなしで突ける穴が出ると影響が大きい。"}, {"term": "HTTP/2", "aliases": ["h2"], "full": "Hypertext Transfer Protocol version 2", "short": "Webの高速な通信方式", "long": "Webの通信を速くするための新しい方式。多くのサーバーで有効になっているが、処理が複雑なぶん、その処理部分の穴が乗っ取りの入口になることがある。"}, {"term": "mod_http2", "aliases": ["mod_h2"], "full": "", "short": "ApacheのHTTP/2処理部品", "long": "Apache HTTP ServerでHTTP/2の通信を扱う追加部品。今回の重大な穴はここにあり、HTTP/2を有効にしているサーバーだけが影響を受ける。"}, {"term": "RHEL", "aliases": ["Red Hat Enterprise Linux"], "full": "Red Hat Enterprise Linux", "short": "企業向けの有償Linux", "long": "米Red Hatが提供する企業向けのLinux。Apacheなどのソフトも独自に修正した版を配るため、本家の版番号ではなく各社の修正パッケージで確認する必要がある。"}, {"term": "Debian", "aliases": [], "full": "", "short": "無料で使えるLinuxの一種", "long": "世界で広く使われる無料のLinuxの一種。Ubuntuなどの土台でもある。修正版の配布が版ごとに異なり、未修正の版が残ることがあるため個別の確認が要る。"}, {"term": "Linux", "aliases": [], "full": "", "short": "サーバーで定番の無料OS", "long": "無料で使えるOSで、Webサーバーやクラウド、ルーター、家電まで幅広く動いている。種類が多く、修正版の配り方や時期も種類ごとに異なる。"}, {"term": "仮想ホスト", "aliases": ["バーチャルホスト"], "full": "", "short": "1台で複数サイトを動かす設定", "long": "1台のWebサーバーで複数のWebサイトを動かすための設定単位。サイトごとに設定が分かれるため、全体で止めたつもりでも一部のサイトで機能が残ることがある。"}, {"term": "Webサーバー", "aliases": [], "full": "", "short": "Webページを配信するサーバー", "long": "利用者のブラウザにWebページを届けるサーバーやソフト。インターネットに公開されているため、穴があると世界中から直接狙われやすい。"}, {"term": "Airターミナル6", "aliases": ["Airターミナル"], "full": "", "short": "ソフトバンクのホームルーター", "long": "SoftBank Airで使う、コンセントにつなぐだけのホームルーター。家庭や小さな事業所の通信の出入口になるため、乗っ取られると通信の盗み見などにつながる。"}, {"term": "ホームルーター", "aliases": [], "full": "", "short": "置くだけで使えるWi-Fi機器", "long": "携帯の電波でネットにつなぎ、家の中にWi-Fiを飛ばす据え置き型の機器。工事なしで使えて手軽だが、家庭内の通信がすべて通るため更新状態が重要。"}, {"term": "ファームウェア", "aliases": [], "full": "", "short": "機器を動かす内蔵ソフト", "long": "ルーターや家電などの機器の中で動くソフト。穴が見つかると更新が必要になるが、自動更新がない機器では利用者が手動で更新しないと危険なまま残る。"}, {"term": "AWS", "aliases": ["Amazon Web Services"], "full": "Amazon Web Services", "short": "Amazonのクラウドサービス", "long": "Amazonが提供する世界最大級のクラウドサービス。サーバーや保存領域を必要な分だけ借りられ、多くの企業のシステムがこの上で動いている。"}, {"term": "AWS Emulator", "aliases": [], "full": "", "short": "AWSを手元で再現する無料ツール", "long": "AWSの機能の受け口を手元のPCで再現するAmazonの無料ツール。課金なしで試せるが、権限の判定などが本物と違うため、本番前の最終確認には使えない。"}, {"term": "パッケージ", "aliases": ["修正パッケージ"], "full": "", "short": "配布用にまとめたソフトの単位", "long": "Linuxなどでソフトを入れたり更新したりするための配布単位。各社が独自に修正を入れて配るため、本家の版番号ではなくパッケージの版で直ったかを確かめる。"}, {"term": "HTTP/1.1", "aliases": [], "full": "Hypertext Transfer Protocol version 1.1", "short": "Webの従来からの通信方式", "long": "HTTP/2より前から使われているWebの通信方式。速さでは劣るが広く対応しており、HTTP/2の穴をふさぐまでの回避策として、こちらだけに絞る設定が勧められている。"}]</script>
+
+<section class="words">
+<h2>今日のキーワード</h2>
+<p><b>リスト型攻撃：</b>どこかで漏れたIDとパスワードの組を、別のサイトで片っ端から試す攻撃。今日は無印良品や宝くじ公式サイトで疑われています。サービスごとにパスワードを変えておけば、被害はそこで止まります。</p>
+</section>
+
+<section class="src">
+<h2>出典</h2>
+<ul>
+<li><a href="https://www.bleepingcomputer.com/news/security/new-n-able-4everable2shell-zero-day-exploited-hours-after-poc-released/">BleepingComputer: New N-able "4EverAble2Shell" zero-day exploited hours after PoC released</a></li>
+<li><a href="https://novaist.jp/articles/muji-data-breach-apology/">NOVAIST: 良品計画、MUJI Card番号約109万件の流出懸念を謝罪 削除漏れと脆弱性認める</a></li>
+<li><a href="https://senken.co.jp/posts/muji-261112">繊研新聞: 良品計画、顧客情報流出で社長が会見 ネットストア再開延期</a></li>
+<li><a href="https://www.itmedia.co.jp/business/articles/2611/12/news056.html">ITmedia ビジネスオンライン: 無印良品、不正アクセス巡る12日間</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/12/2000003158/">ITmedia NEWS: 宝くじ公式サイト、会員の当落情報まで第三者が閲覧の可能性 リスト型攻撃か</a></li>
+<li><a href="https://www.cscloud.co.jp/news/info/20261112-2/">サイバーセキュリティクラウド 当社開発環境における情報漏えいのおそれに関するお知らせとお詫び（第一報）</a></li>
+<li><a href="https://news.web.nhk/newsweb/na/nd-20261112de75041">NHK: セキュリティーサービス企業に不正アクセス 顧客情報漏えいか</a></li>
+<li><a href="https://jvn.jp/vu/JVNVU97400824/">JVNVU#97400824: BrotliのC言語実装における境界外書き込みの脆弱性</a></li>
+<li><a href="https://brandefense.io/blog/http2shell-brotli-cve-2026-111497/">Brandefense: HTTP2Shell (CVE-2026-111497): Fixed Versions</a></li>
+<li><a href="https://jvn.jp/vu/JVNVU90805396/">JVNVU#90805396: Apache HTTP Server 2.4における複数の脆弱性に対するアップデート</a></li>
+<li><a href="https://thehackernews.com/2026/11/critical-apache-http2-flaw-could-let.html">The Hacker News: Critical Apache HTTP/2 Flaw Could Let Unauthenticated Attackers Execute Code Remotely</a></li>
+<li><a href="https://jvn.jp/jp/JVN64740097/">JVN#64740097: SoftBank製Airターミナル6におけるOSコマンドインジェクションの脆弱性</a></li>
+<li><a href="https://internet.watch.impress.co.jp/docs/news/2155875.html">INTERNET Watch: ソフトバンクのホームルーター「Airターミナル6」にOSコマンドインジェクションの脆弱性</a></li>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/12/2000003126/">ITmedia NEWS: Amazon、AWSのAPIを手元で再現する「AWS Emulator」を無償公開</a></li>
+</ul>
+</section>
