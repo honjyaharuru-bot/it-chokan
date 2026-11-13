@@ -1,5 +1,19 @@
-<!--meta {"date":"2026-11-13","title":"N-centralの穴が悪用開始／無印109万件など漏えい3件／T:AWSを手元で無料再現","summary":"N-centralの穴が悪用開始、最新の修正版の機器も侵害。漏えいは無印の109万件など3件。Apacheに重大な穴。AWSを手元で無料再現。","window":"11/12 05:30 〜 11/13 05:30 JST"} -->
+<!--meta {"date":"2026-11-13","title":"Microsoftで世界的な大規模障害／N-centralの穴が悪用開始／T:AWSを手元で無料再現","summary":"Microsoftで世界的な大規模障害、Teamsなどが使えず。N-centralの穴が悪用開始。漏えいは無印の109万件など3件。AWSを手元で無料再現。","window":"11/12 05:30 〜 11/13 05:30 JST"} -->
 <h2 class="part" id="cat-incident"><span>#</span>インシデント</h2>
+
+<article class="topic" data-sev="high" data-tag="重大" data-short="MS365で世界的な障害">
+<header><span class="sev">ヤバい</span><h3>Microsoftで世界的な大規模障害、OutlookやTeamsが使えず。朝8時時点で一部回復、全面復旧はまだ</h3></header>
+<p class="what"><span class="pn">Microsoft</span>の仕事用クラウド<span class="pn">Microsoft 365</span>で世界的な大規模障害が起き、メールの<span class="pn">Outlook</span>やチャット・会議の<span class="pn">Teams</span>が使えない状態が続いています。Microsoftは11/13 3時ごろ（日本時間）に全地域へ広がる恐れがあると発表し、8時すぎの発表では一部が戻り始めたものの、全面復旧はまだです。</p>
+<p class="what">多くのサーバーが自動の健康診断（ヘルスチェック）に失敗して止まり、残りのサーバーに負荷が集中したとされます。仕事用AIの<span class="pn">Copilot</span>なども影響を受けました。</p>
+<p class="ex"><b>たとえると</b>レジが次々に止まり、残りのレジに行列が集中して、そこも止まりかけている状態です。</p>
+<dl class="facts">
+<dt>発生</dt><dd>11/12 23:45ごろ Teams（北米）、11/13 1:17ごろ Exchange Onlineのメール接続（いずれも日本時間）</dd>
+<dt>障害番号</dt><dd>MO1550821（Microsoft 365 管理センター）</dd>
+<dt>状況</dt><dd>8:04の発表で、止まったサーバーの一部が復帰して安定し、限定的に回復。全面復旧の時刻は未定</dd>
+<dt>影響</dt><dd>Outlook、Teams、SharePoint、Copilot、Defender、Intune、Purview、Planner など</dd>
+</dl>
+<p class="act"><b>やること</b>利用者: つながらなくても再インストールやパスワード変更はせず、電話や別の連絡手段を使う。管理者: Microsoft 365の管理センターで障害番号MO1550821を追い、社内に代わりの連絡手段を知らせる。</p>
+</article>
 
 <article class="topic" data-sev="high" data-tag="続報" data-short="【続報】N-centralが悪用">
 <header><span class="sev">ヤバい</span><h3>【続報】N-centralの新たな穴、公開から数時間で悪用。最新の修正版も破られる</h3></header>
@@ -30,7 +44,7 @@
 <article class="topic" data-sev="high" data-tag="重大" data-short="Brotliの穴、更新を">
 <header><span class="sev">ヤバい</span><h3>データ圧縮Brotliの穴「HTTP2Shell」、悪用確認済み。Node.jsやPythonも対象</h3></header>
 <p class="what">Googleのデータ圧縮方式<span class="pn">Brotli</span>の穴「HTTP2Shell」について、国内の脆弱性情報サイトJVNが11/12に情報を更新しました。10月から悪用が確認されている穴で、多くのWebサーバーやアプリが部品として使っています。</p>
-<p class="what">細工した圧縮データを送られるだけで乗っ取られる恐れがあります。サーバー用の実行環境<span class="pn">Node.js</span>や、プログラミング言語<span class="pn">Python</span>の部品も対象です。</p>
+<p class="what">サーバー用の実行環境<span class="pn">Node.js</span>や、プログラミング言語<span class="pn">Python</span>の部品も対象です。</p>
 <p class="ex"><b>たとえると</b>荷ほどき係が箱の大きさを確かめずに中身を広げ、隣の棚の書類まで上書きしてしまう状態です。</p>
 <dl class="facts">
 <dt>CVE</dt><dd>CVE-2026-111497（CVSS 9.8、EPSS 82.6%）</dd>
@@ -40,25 +54,11 @@
 <p class="act"><b>やること</b>管理者: Node.jsやPython、コンテナの中のBrotliの版を洗い出して更新。再起動だけでは古い部品が残るため、作り直して入れ替える。</p>
 </article>
 
-<article class="topic" data-sev="high" data-tag="広域" data-short="Apacheに重大な穴">
-<header><span class="sev">ヤバい</span><h3>Webサーバーの定番Apacheに、ログインなしで乗っ取れる穴。2.4.71で修正</h3></header>
-<p class="what">Webサーバーソフトの定番<span class="pn">Apache HTTP Server</span>（Apache）に、ログインなしで乗っ取られる重大な穴が見つかり、11/11に修正版2.4.71が出ました。高速な通信方式HTTP/2を有効にしたサーバーが対象です。</p>
-<p class="what">実際の悪用はまだ報告されていません。ただ、米<span class="pn">Red Hat</span>は確実に動く攻撃手法が研究で示されたとしています。</p>
-<p class="ex"><b>たとえると</b>高速レーンを開けている料金所だけ、ゲートを素通りできる抜け道が見つかった状態です。</p>
-<dl class="facts">
-<dt>CVE</dt><dd>CVE-2026-119618（CVSS 9.8、Red Hatの評価）</dd>
-<dt>対象</dt><dd>2.4.55〜2.4.70でHTTP/2を有効にしている場合</dd>
-<dt>直った版</dt><dd><b>Apache HTTP Server 2.4.71</b>（RHELなどは各社の修正パッケージ。Debianの一部は未修正）</dd>
-<dt>回避策</dt><dd>設定でHTTP/2を無効にし、HTTP/1.1だけにする</dd>
-</dl>
-<p class="act"><b>やること</b>利用者: 自分でサーバーを運用していなければ対応不要。管理者: 2.4.71か各Linuxの修正版へ更新。すぐ無理なら、すべての仮想ホストでHTTP/2を止める。</p>
-</article>
-
 <article class="topic" data-sev="low" data-tag="日本" data-short="Airターミナル6に穴">
 <header><span class="sev">注目</span><h3>ソフトバンクのホームルーター「Airターミナル6」に穴、修正は自動適用済み</h3></header>
 <p class="what"><span class="pn">ソフトバンク</span>の置くだけWi-Fiのホームルーター<span class="pn">Airターミナル6</span>に、機器の命令を勝手に実行される穴が公表されました。修正版はすでに自動で当たっており、利用者がすることは基本ありません。</p>
 <p class="what">悪用には管理画面へのログインが必要です。ソフトバンクは9月に機器を動かす内蔵ソフト（ファームウェア）の修正版を出し、自動で適用しています。</p>
-<p class="ex"><b>たとえると</b>玄関の鍵を持つ人なら配電盤まで勝手にいじれる欠陥が、業者の巡回で知らないうちに直っていた状態です。</p>
+<p class="ex"><b>たとえると</b>家の欠陥が、業者の巡回で知らないうちに直っていた状態です。</p>
 <dl class="facts">
 <dt>CVE</dt><dd>CVE-2026-101107（CVSS 3.0で8.0、4.0で8.6）</dd>
 <dt>対象</dt><dd>ファームウェア v1.01.80以前</dd>
@@ -72,12 +72,12 @@
 <article class="topic" data-sev="low" data-tag="世界" data-short="AWSを手元で無料再現">
 <header><span class="sev">注目</span><h3>Amazon、AWSを手元で再現する「AWS Emulator」を無料公開。コードはすべてAIが記述</h3></header>
 <p class="what"><span class="pn">Amazon</span>のクラウド<span class="pn">AWS</span>が、AWSの機能を手元のPCで無料で再現できる<span class="pn">AWS Emulator</span>を公開しました。AWSのアカウントがなくても、アプリの動作を試せます。</p>
-<p class="what">AWSを操作する命令の受け口（API）をまねて作られ、数百のサービスに対応します。権限の判定は本物と違うため、セキュリティの試験には向きません。コードはすべてAIエージェントが書き、人の目では確認していないとしています。</p>
+<p class="what">AWSを操作する命令の受け口（API）をまねて作られ、数百のサービスに対応します。コードはすべてAIエージェントが書き、人の目では確認していないとしています。</p>
 <p class="ex"><b>たとえると</b>本番の舞台を借りなくても、そっくりのセットで通し稽古ができるイメージです。</p>
 <p class="act"><b>やること</b>利用者: AWSで開発している人は、課金を気にせずテストに使える。管理者: 本物とずれる部分があるので、最終確認は本物のAWSで行うルールに。</p>
 </article>
 
-<script type="application/json" id="post-terms">[{"term": "遠隔管理ツール", "aliases": ["RMM"], "full": "Remote Monitoring and Management", "short": "多数のPCを遠くから管理する道具", "long": "IT業者が顧客企業のPCやサーバーを遠隔で監視・更新・操作するソフト。全顧客の端末に強い権限を持つため、乗っ取られると被害が多数の企業へ一気に広がる。"}, {"term": "N-central", "aliases": [], "full": "", "short": "N-ableの遠隔管理ツール", "long": "米N-ableが提供するIT業者向けの遠隔監視・管理ソフト。業者が顧客企業の端末をまとめて操作できるため、穴を突かれると顧客側まで侵入される恐れがある。"}, {"term": "4EverAble2Shell", "aliases": [], "full": "", "short": "N-centralの新たな乗っ取りの穴", "long": "N-centralの古い連携機能を入口に、ログインなしで最上位の権限を奪える攻撃手順の通称。公開から数時間で悪用され、最新の修正版の機器も被害を受けた。"}, {"term": "Agent2Shell", "aliases": [], "full": "", "short": "N-centralの端末側を狙う穴", "long": "N-centralが顧客のPCに入れる常駐ソフトを狙い、Windowsを最上位の権限で操作できるとされる穴の通称。管理される側のPCまで被害が広がる恐れがある。"}, {"term": "Legacy API", "aliases": [], "full": "", "short": "N-centralの古い連携機能", "long": "N-centralで外部の仕組みとつなぐための古い窓口。今は初期状態で無効だが、有効にしたままだと今回の攻撃の入口になるため、設定の確認が必要。"}, {"term": "Hotfix", "aliases": ["ホットフィックス"], "full": "", "short": "緊急に出す修正版", "long": "定期の更新を待たずに、深刻な不具合や脆弱性をふさぐため急いで出す修正版。対象を絞ることが多く、別の穴が後から見つかると再び破られることもある。"}, {"term": "オンプレミス", "aliases": ["オンプレ"], "full": "On-premises", "short": "自社で設置・運用する形態", "long": "ソフトやサーバーをクラウドではなく自社の設備に置いて運用する形態。更新も自社の責任になるため、修正版の適用が遅れると穴が開いたままになりやすい。"}, {"term": "暗号化", "aliases": [], "full": "", "short": "鍵がないと読めない形に変換", "long": "データを鍵がないと読めない形に変えること。暗号化せずに保存したデータは、盗まれればそのまま読まれるため、カード番号などの重要な情報は暗号化が基本。"}, {"term": "MUJI Card", "aliases": [], "full": "", "short": "無印良品のクレジットカード", "long": "良品計画が発行する提携クレジットカード。かつてはカード番号で会員を識別していたため、その番号が不要になった後も社内システムに残り、今回の漏えいにつながった。"}, {"term": "GitHub", "aliases": [], "full": "", "short": "プログラムの保管・共有サービス", "long": "世界中の開発者がプログラムのコードを保管・共有するサービス。ログイン用の認証情報が漏れると、保管されたコードや設定に含まれる情報まで第三者に見られる恐れがある。"}, {"term": "Brotli", "aliases": [], "full": "", "short": "Google製のデータ圧縮方式", "long": "Googleが開発したデータ圧縮の方式とその部品。Webの通信を軽くするため多くのサーバーやアプリに組み込まれており、穴があると影響が非常に広く及ぶ。"}, {"term": "HTTP2Shell", "aliases": ["Node2Shell", "Broccoli2Shell"], "full": "", "short": "Brotliの乗っ取りの穴の通称", "long": "Brotliの展開処理にある境界外書き込みの脆弱性（CVE-2026-111497）の通称。細工したデータを送るだけで乗っ取りにつながる恐れがあり、KEVにも掲載された。"}, {"term": "Node.js", "aliases": ["Node"], "full": "", "short": "サーバー用JS実行環境", "long": "Webサーバーや業務アプリで広く使われるJavaScriptの実行環境。部品としてBrotliを内蔵しているため、版が古いと今回の穴の影響を受ける。"}, {"term": "Python", "aliases": [], "full": "", "short": "人気のプログラミング言語", "long": "AIやデータ分析、Webアプリなどで広く使われるプログラミング言語。追加部品を入れて使うことが多く、部品に穴があると、その部品を使うアプリが影響を受ける。"}, {"term": "Apache HTTP Server", "aliases": ["Apache", "Apache httpd"], "full": "", "short": "定番のWebサーバーソフト", "long": "世界中のWebサイトで長く使われているオープンソースのWebサーバーソフト。利用数が非常に多いため、ログインなしで突ける穴が出ると影響が大きい。"}, {"term": "HTTP/2", "aliases": ["h2"], "full": "Hypertext Transfer Protocol version 2", "short": "Webの高速な通信方式", "long": "Webの通信を速くするための新しい方式。多くのサーバーで有効になっているが、処理が複雑なぶん、その処理部分の穴が乗っ取りの入口になることがある。"}, {"term": "mod_http2", "aliases": ["mod_h2"], "full": "", "short": "ApacheのHTTP/2処理部品", "long": "Apache HTTP ServerでHTTP/2の通信を扱う追加部品。今回の重大な穴はここにあり、HTTP/2を有効にしているサーバーだけが影響を受ける。"}, {"term": "RHEL", "aliases": ["Red Hat Enterprise Linux"], "full": "Red Hat Enterprise Linux", "short": "企業向けの有償Linux", "long": "米Red Hatが提供する企業向けのLinux。Apacheなどのソフトも独自に修正した版を配るため、本家の版番号ではなく各社の修正パッケージで確認する必要がある。"}, {"term": "Debian", "aliases": [], "full": "", "short": "無料で使えるLinuxの一種", "long": "世界で広く使われる無料のLinuxの一種。Ubuntuなどの土台でもある。修正版の配布が版ごとに異なり、未修正の版が残ることがあるため個別の確認が要る。"}, {"term": "Linux", "aliases": [], "full": "", "short": "サーバーで定番の無料OS", "long": "無料で使えるOSで、Webサーバーやクラウド、ルーター、家電まで幅広く動いている。種類が多く、修正版の配り方や時期も種類ごとに異なる。"}, {"term": "仮想ホスト", "aliases": ["バーチャルホスト"], "full": "", "short": "1台で複数サイトを動かす設定", "long": "1台のWebサーバーで複数のWebサイトを動かすための設定単位。サイトごとに設定が分かれるため、全体で止めたつもりでも一部のサイトで機能が残ることがある。"}, {"term": "Webサーバー", "aliases": [], "full": "", "short": "Webページを配信するサーバー", "long": "利用者のブラウザにWebページを届けるサーバーやソフト。インターネットに公開されているため、穴があると世界中から直接狙われやすい。"}, {"term": "Airターミナル6", "aliases": ["Airターミナル"], "full": "", "short": "ソフトバンクのホームルーター", "long": "SoftBank Airで使う、コンセントにつなぐだけのホームルーター。家庭や小さな事業所の通信の出入口になるため、乗っ取られると通信の盗み見などにつながる。"}, {"term": "ホームルーター", "aliases": [], "full": "", "short": "置くだけで使えるWi-Fi機器", "long": "携帯の電波でネットにつなぎ、家の中にWi-Fiを飛ばす据え置き型の機器。工事なしで使えて手軽だが、家庭内の通信がすべて通るため更新状態が重要。"}, {"term": "ファームウェア", "aliases": [], "full": "", "short": "機器を動かす内蔵ソフト", "long": "ルーターや家電などの機器の中で動くソフト。穴が見つかると更新が必要になるが、自動更新がない機器では利用者が手動で更新しないと危険なまま残る。"}, {"term": "AWS", "aliases": ["Amazon Web Services"], "full": "Amazon Web Services", "short": "Amazonのクラウドサービス", "long": "Amazonが提供する世界最大級のクラウドサービス。サーバーや保存領域を必要な分だけ借りられ、多くの企業のシステムがこの上で動いている。"}, {"term": "AWS Emulator", "aliases": [], "full": "", "short": "AWSを手元で再現する無料ツール", "long": "AWSの機能の受け口を手元のPCで再現するAmazonの無料ツール。課金なしで試せるが、権限の判定などが本物と違うため、本番前の最終確認には使えない。"}, {"term": "パッケージ", "aliases": ["修正パッケージ"], "full": "", "short": "配布用にまとめたソフトの単位", "long": "Linuxなどでソフトを入れたり更新したりするための配布単位。各社が独自に修正を入れて配るため、本家の版番号ではなくパッケージの版で直ったかを確かめる。"}, {"term": "HTTP/1.1", "aliases": [], "full": "Hypertext Transfer Protocol version 1.1", "short": "Webの従来からの通信方式", "long": "HTTP/2より前から使われているWebの通信方式。速さでは劣るが広く対応しており、HTTP/2の穴をふさぐまでの回避策として、こちらだけに絞る設定が勧められている。"}]</script>
+<script type="application/json" id="post-terms">[{"term": "遠隔管理ツール", "aliases": ["RMM"], "full": "Remote Monitoring and Management", "short": "多数のPCを遠くから管理する道具", "long": "IT業者が顧客企業のPCやサーバーを遠隔で監視・更新・操作するソフト。全顧客の端末に強い権限を持つため、乗っ取られると被害が多数の企業へ一気に広がる。"}, {"term": "N-central", "aliases": [], "full": "", "short": "N-ableの遠隔管理ツール", "long": "米N-ableが提供するIT業者向けの遠隔監視・管理ソフト。業者が顧客企業の端末をまとめて操作できるため、穴を突かれると顧客側まで侵入される恐れがある。"}, {"term": "4EverAble2Shell", "aliases": [], "full": "", "short": "N-centralの新たな乗っ取りの穴", "long": "N-centralの古い連携機能を入口に、ログインなしで最上位の権限を奪える攻撃手順の通称。公開から数時間で悪用され、最新の修正版の機器も被害を受けた。"}, {"term": "Agent2Shell", "aliases": [], "full": "", "short": "N-centralの端末側を狙う穴", "long": "N-centralが顧客のPCに入れる常駐ソフトを狙い、Windowsを最上位の権限で操作できるとされる穴の通称。管理される側のPCまで被害が広がる恐れがある。"}, {"term": "Legacy API", "aliases": [], "full": "", "short": "N-centralの古い連携機能", "long": "N-centralで外部の仕組みとつなぐための古い窓口。今は初期状態で無効だが、有効にしたままだと今回の攻撃の入口になるため、設定の確認が必要。"}, {"term": "Hotfix", "aliases": ["ホットフィックス"], "full": "", "short": "緊急に出す修正版", "long": "定期の更新を待たずに、深刻な不具合や脆弱性をふさぐため急いで出す修正版。対象を絞ることが多く、別の穴が後から見つかると再び破られることもある。"}, {"term": "オンプレミス", "aliases": ["オンプレ"], "full": "On-premises", "short": "自社で設置・運用する形態", "long": "ソフトやサーバーをクラウドではなく自社の設備に置いて運用する形態。更新も自社の責任になるため、修正版の適用が遅れると穴が開いたままになりやすい。"}, {"term": "暗号化", "aliases": [], "full": "", "short": "鍵がないと読めない形に変換", "long": "データを鍵がないと読めない形に変えること。暗号化せずに保存したデータは、盗まれればそのまま読まれるため、カード番号などの重要な情報は暗号化が基本。"}, {"term": "MUJI Card", "aliases": [], "full": "", "short": "無印良品のクレジットカード", "long": "良品計画が発行する提携クレジットカード。かつてはカード番号で会員を識別していたため、その番号が不要になった後も社内システムに残り、今回の漏えいにつながった。"}, {"term": "GitHub", "aliases": [], "full": "", "short": "プログラムの保管・共有サービス", "long": "世界中の開発者がプログラムのコードを保管・共有するサービス。ログイン用の認証情報が漏れると、保管されたコードや設定に含まれる情報まで第三者に見られる恐れがある。"}, {"term": "Brotli", "aliases": [], "full": "", "short": "Google製のデータ圧縮方式", "long": "Googleが開発したデータ圧縮の方式とその部品。Webの通信を軽くするため多くのサーバーやアプリに組み込まれており、穴があると影響が非常に広く及ぶ。"}, {"term": "HTTP2Shell", "aliases": ["Node2Shell", "Broccoli2Shell"], "full": "", "short": "Brotliの乗っ取りの穴の通称", "long": "Brotliの展開処理にある境界外書き込みの脆弱性（CVE-2026-111497）の通称。細工したデータを送るだけで乗っ取りにつながる恐れがあり、KEVにも掲載された。"}, {"term": "Node.js", "aliases": ["Node"], "full": "", "short": "サーバー用JS実行環境", "long": "Webサーバーや業務アプリで広く使われるJavaScriptの実行環境。部品としてBrotliを内蔵しているため、版が古いと今回の穴の影響を受ける。"}, {"term": "Python", "aliases": [], "full": "", "short": "人気のプログラミング言語", "long": "AIやデータ分析、Webアプリなどで広く使われるプログラミング言語。追加部品を入れて使うことが多く、部品に穴があると、その部品を使うアプリが影響を受ける。"}, {"term": "Webサーバー", "aliases": [], "full": "", "short": "Webページを配信するサーバー", "long": "利用者のブラウザにWebページを届けるサーバーやソフト。インターネットに公開されているため、穴があると世界中から直接狙われやすい。"}, {"term": "Airターミナル6", "aliases": ["Airターミナル"], "full": "", "short": "ソフトバンクのホームルーター", "long": "SoftBank Airで使う、コンセントにつなぐだけのホームルーター。家庭や小さな事業所の通信の出入口になるため、乗っ取られると通信の盗み見などにつながる。"}, {"term": "ホームルーター", "aliases": [], "full": "", "short": "置くだけで使えるWi-Fi機器", "long": "携帯の電波でネットにつなぎ、家の中にWi-Fiを飛ばす据え置き型の機器。工事なしで使えて手軽だが、家庭内の通信がすべて通るため更新状態が重要。"}, {"term": "ファームウェア", "aliases": [], "full": "", "short": "機器を動かす内蔵ソフト", "long": "ルーターや家電などの機器の中で動くソフト。穴が見つかると更新が必要になるが、自動更新がない機器では利用者が手動で更新しないと危険なまま残る。"}, {"term": "AWS", "aliases": ["Amazon Web Services"], "full": "Amazon Web Services", "short": "Amazonのクラウドサービス", "long": "Amazonが提供する世界最大級のクラウドサービス。サーバーや保存領域を必要な分だけ借りられ、多くの企業のシステムがこの上で動いている。"}, {"term": "AWS Emulator", "aliases": [], "full": "", "short": "AWSを手元で再現する無料ツール", "long": "AWSの機能の受け口を手元のPCで再現するAmazonの無料ツール。課金なしで試せるが、権限の判定などが本物と違うため、本番前の最終確認には使えない。"}, {"term": "Microsoft 365", "aliases": ["M365", "Office 365"], "full": "", "short": "Microsoftの仕事用クラウド一式", "long": "メール、チャット、文書作成、共有などをまとめたMicrosoftのクラウドサービス。世界中の企業が業務の土台にしているため、止まると連絡や仕事が一斉に滞る。"}, {"term": "Outlook", "aliases": [], "full": "", "short": "Microsoftのメール・予定表ソフト", "long": "Microsoftのメールと予定表のソフト・サービス。Microsoft 365の裏側のメールサーバーが止まると、パソコンでもスマホでもメールが読めなくなる。"}, {"term": "Teams", "aliases": ["Microsoft Teams"], "full": "", "short": "Microsoftのチャット・会議ツール", "long": "Microsoftの社内チャット、ビデオ会議、ファイル共有のツール。多くの企業の連絡手段になっているため、止まったときの代わりの連絡方法を決めておく必要がある。"}, {"term": "Exchange Online", "aliases": [], "full": "", "short": "Microsoftのクラウドのメール基盤", "long": "Microsoftがクラウドで運用するメールサーバーで、Outlookの裏側にあたる。今回の障害の中心で、ここが止まるとメールの送受信や閲覧ができなくなる。"}, {"term": "SharePoint", "aliases": ["SharePoint Online"], "full": "", "short": "Microsoftの社内共有サイト", "long": "社内向けのWebサイトや文書の共有に使うMicrosoftのサービス。TeamsのファイルもSharePointに保存されるため、止まると共有ファイルが開けなくなる。"}, {"term": "Copilot", "aliases": ["Microsoft 365 Copilot"], "full": "", "short": "Microsoftの仕事用AI", "long": "Microsoft 365に組み込まれた生成AI。メールや文書を読んで要約や下書きを作る。土台のサービスが止まると、AIも社内データを読めず使えなくなる。"}, {"term": "ヘルスチェック", "aliases": ["健康診断"], "full": "Health check", "short": "サーバーの稼働を自動で確かめる仕組み", "long": "サーバーが正常に動いているかを定期的に自動で確かめる仕組み。異常と判定すると切り離すため、判定が誤ると健全なサーバーまで外れ、全体が止まることがある。"}, {"term": "管理センター", "aliases": ["Microsoft 365 管理センター"], "full": "", "short": "Microsoft 365の管理者用画面", "long": "Microsoft 365の利用者やライセンス、障害情報を管理者が確認する画面。障害時は障害番号ごとの最新状況がここに出るため、社内への案内の根拠になる。"}, {"term": "Defender", "aliases": ["Microsoft Defender"], "full": "", "short": "Microsoftのセキュリティ製品群", "long": "PCやメールを攻撃から守るMicrosoftのセキュリティ製品群。止まると不審なメールの検査や攻撃の監視が遅れるため、障害中は普段以上に注意が要る。"}, {"term": "Purview", "aliases": ["Microsoft Purview"], "full": "", "short": "Microsoftの情報保護の仕組み", "long": "社内データの分類や持ち出し防止などを行うMicrosoftのサービス。止まると機密ラベルの付与や漏えい防止のチェックが働かなくなることがある。"}, {"term": "Planner", "aliases": ["Microsoft Planner"], "full": "", "short": "Microsoftのタスク管理ツール", "long": "チームの作業を一覧にして担当や期限を管理するMicrosoftのツール。Microsoft 365の一部として動くため、土台が止まると予定や作業の確認ができなくなる。"}]</script>
 
 <section class="words">
 <h2>今日のキーワード</h2>
@@ -87,6 +87,11 @@
 <section class="src">
 <h2>出典</h2>
 <ul>
+<li><a href="https://www.itmedia.co.jp/news/article/2611/13/2000003161/">ITmedia NEWS: Microsoft 365で大規模障害 「Outlook」でメールにアクセスできず、「Teams」など複数サービスに影響</a></li>
+<li><a href="https://www.bleepingcomputer.com/news/microsoft/massive-microsoft-365-outage-disrupts-outlook-teams-copilot-worldwide/">BleepingComputer: Massive Microsoft 365 outage disrupts Outlook, Teams, Copilot worldwide</a></li>
+<li><a href="https://www.on-sitetechnology.com/microsoft-365-outage-november-2026/">On-Site Technology: Microsoft 365 Outage, November 12, 2026: What Is Down and the Timeline</a></li>
+<li><a href="https://x.com/MSFT365Status/status/2121016338181161457">Microsoft 365 Status（X）: 8:04の発表</a></li>
+<li><a href="https://www.cnbc.com/2026/11/12/microsoft-outage-outlook-aws-google.html">CNBC: Microsoft outage hits Outlook</a></li>
 <li><a href="https://www.bleepingcomputer.com/news/security/new-n-able-4everable2shell-zero-day-exploited-hours-after-poc-released/">BleepingComputer: New N-able "4EverAble2Shell" zero-day exploited hours after PoC released</a></li>
 <li><a href="https://novaist.jp/articles/muji-data-breach-apology/">NOVAIST: 良品計画、MUJI Card番号約109万件の流出懸念を謝罪 削除漏れと脆弱性認める</a></li>
 <li><a href="https://senken.co.jp/posts/muji-261112">繊研新聞: 良品計画、顧客情報流出で社長が会見 ネットストア再開延期</a></li>
@@ -96,8 +101,6 @@
 <li><a href="https://news.web.nhk/newsweb/na/nd-20261112de75041">NHK: セキュリティーサービス企業に不正アクセス 顧客情報漏えいか</a></li>
 <li><a href="https://jvn.jp/vu/JVNVU97400824/">JVNVU#97400824: BrotliのC言語実装における境界外書き込みの脆弱性</a></li>
 <li><a href="https://brandefense.io/blog/http2shell-brotli-cve-2026-111497/">Brandefense: HTTP2Shell (CVE-2026-111497): Fixed Versions</a></li>
-<li><a href="https://jvn.jp/vu/JVNVU90805396/">JVNVU#90805396: Apache HTTP Server 2.4における複数の脆弱性に対するアップデート</a></li>
-<li><a href="https://thehackernews.com/2026/11/critical-apache-http2-flaw-could-let.html">The Hacker News: Critical Apache HTTP/2 Flaw Could Let Unauthenticated Attackers Execute Code Remotely</a></li>
 <li><a href="https://jvn.jp/jp/JVN64740097/">JVN#64740097: SoftBank製Airターミナル6におけるOSコマンドインジェクションの脆弱性</a></li>
 <li><a href="https://internet.watch.impress.co.jp/docs/news/2155875.html">INTERNET Watch: ソフトバンクのホームルーター「Airターミナル6」にOSコマンドインジェクションの脆弱性</a></li>
 <li><a href="https://www.itmedia.co.jp/news/article/2611/12/2000003126/">ITmedia NEWS: Amazon、AWSのAPIを手元で再現する「AWS Emulator」を無償公開</a></li>
