@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Build the static site into _site/. (v10)
+"""Build the static site into _site/. (v11)
+v11: kandoku card note adds "private browsing loses stamps when closed".
 Inputs: config.json, glossary.json, posts/YYYY-MM-DD.html (first line: <!--meta {json} -->), static/
 Optional: site_ids.json {"google_site_verification": "", "goatcounter": "", "show_counter": false}
 SITE_URL: env SITE_URL, else derived from GITHUB_REPOSITORY (owner/repo) -> https://owner.github.io/repo/
@@ -377,7 +378,7 @@ def kandoku_html(p, rel, is_current):
 <p class="kd-title">朝刊スタンプ <span id="kdcount"></span></p>
 <div class="kd-week" id="kdweek"></div>
 <p class="kd-rank" id="kdrank">最新号を完読すると、スタンプが押されます。</p>
-{note}<p class="kd-note">記録はこの端末のブラウザだけに保存されます。</p>
+{note}<p class="kd-note">記録はこの端末のブラウザだけに保存されます。プライベートブラウズでは、閉じると消えます。</p>
 </div>
 <p class="kd-follow-h">明日の朝刊も受け取る</p>
 <div class="kd-follow">{btns}</div>
